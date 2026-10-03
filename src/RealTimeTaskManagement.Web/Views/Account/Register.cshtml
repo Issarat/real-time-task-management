@@ -1,0 +1,227 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "สมัครสมาชิก";
+    Layout = "/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="auth-page">
+    <main class="auth-shell auth-shell-register" aria-labelledby="register-title">
+        <section class="auth-promo" aria-label="เกี่ยวกับ TaskFlow">
+            <div class="promo-glow promo-glow-top"></div>
+            <div class="promo-glow promo-glow-bottom"></div>
+
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img">
+                        <path d="m7.5 12 3 3 6-6" />
+                    </svg>
+                </span>
+                <span>TaskFlow</span>
+            </div>
+
+            <div class="promo-content">
+                <div class="promo-badge">
+                    <span class="promo-badge-dot"></span>
+                    เริ่มต้นใช้งานได้ใน 2 นาที
+                </div>
+
+                <h2>เริ่มต้นพื้นที่ทำงาน<br /><span>ที่เติบโตไปกับทีมของคุณ</span></h2>
+                <p>
+                    สร้างโปรเจกต์ จัดระเบียบงาน และชวนสมาชิกเข้าร่วม
+                    เพื่อให้ทุกคนเห็นเป้าหมายและความคืบหน้าเดียวกัน
+                </p>
+
+                <div class="benefit-card">
+                    <div class="benefit-item">
+                        <span class="benefit-icon benefit-icon-blue" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="m6.5 12.5 3 3 8-8" /></svg>
+                        </span>
+                        <div>
+                            <strong>พร้อมใช้งานทันที</strong>
+                            <small>สร้างบอร์ดแรกและเริ่มจัดการงานได้เลย</small>
+                        </div>
+                    </div>
+
+                    <div class="benefit-divider"></div>
+
+                    <div class="benefit-item">
+                        <span class="benefit-icon benefit-icon-green" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                        </span>
+                        <div>
+                            <strong>ชวนทีมได้ไม่จำกัดขั้นตอน</strong>
+                            <small>แชร์ Invite Code ให้สมาชิกเข้าร่วมโปรเจกต์</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="promo-footer">
+                <div class="avatar-stack" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </div>
+                <span>เริ่มต้นฟรีสำหรับโปรเจกต์ของคุณ</span>
+            </div>
+        </section>
+
+        <section class="auth-form-panel auth-form-panel-register">
+            <div class="auth-form-container">
+                <div class="auth-switch">
+                    <span>มีบัญชีอยู่แล้ว?</span>
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       asp-route-returnUrl="@Model.ReturnUrl">เข้าสู่ระบบ</a>
+                </div>
+
+                <header class="auth-heading">
+                    <div class="mobile-brand">
+                        <span class="brand-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="m7.5 12 3 3 6-6" /></svg>
+                        </span>
+                        <span>TaskFlow</span>
+                    </div>
+                    <p class="auth-eyebrow">เริ่มต้นใช้งานฟรี</p>
+                    <h1 id="register-title">สร้างบัญชีของคุณ</h1>
+                    <p>สร้างบัญชีเพื่อเริ่มจัดการโปรเจกต์ร่วมกับทีม</p>
+                </header>
+
+                <form id="register-form"
+                      asp-controller="Account"
+                      asp-action="Register"
+                      method="post"
+                      class="auth-form">
+                    <input asp-for="ReturnUrl" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+
+                    <div class="field-group">
+                        <label asp-for="DisplayName">ชื่อที่แสดง</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 21a8 8 0 0 1 16 0" />
+                                </svg>
+                            </span>
+                            <input asp-for="DisplayName"
+                                   autocomplete="name"
+                                   placeholder="ชื่อของคุณ"
+                                   autofocus />
+                        </div>
+                        <span asp-validation-for="DisplayName" class="field-validation"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label asp-for="Email">อีเมล</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="3" y="5" width="18" height="14" rx="3" />
+                                    <path d="m5 8 7 5 7-5" />
+                                </svg>
+                            </span>
+                            <input asp-for="Email"
+                                   type="email"
+                                   autocomplete="username"
+                                   placeholder="name@company.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="field-validation"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label asp-for="Password">รหัสผ่าน</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="5" y="10" width="14" height="11" rx="3" />
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                                </svg>
+                            </span>
+                            <input asp-for="Password"
+                                   id="register-password"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   placeholder="สร้างรหัสผ่าน" />
+                            <button type="button"
+                                    class="password-toggle"
+                                    data-password-toggle="register-password"
+                                    aria-label="แสดงรหัสผ่าน"
+                                    aria-pressed="false">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                                    <circle cx="12" cy="12" r="2.5" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="field-validation"></span>
+                        <p class="password-requirements">อย่างน้อย 8 ตัว พร้อมตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข</p>
+                    </div>
+
+                    <div class="field-group">
+                        <label asp-for="ConfirmPassword">ยืนยันรหัสผ่าน</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="5" y="10" width="14" height="11" rx="3" />
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                                </svg>
+                            </span>
+                            <input asp-for="ConfirmPassword"
+                                   id="register-confirm-password"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   placeholder="กรอกรหัสผ่านอีกครั้ง" />
+                            <button type="button"
+                                    class="password-toggle"
+                                    data-password-toggle="register-confirm-password"
+                                    aria-label="แสดงรหัสผ่าน"
+                                    aria-pressed="false">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                                    <circle cx="12" cy="12" r="2.5" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="field-validation"></span>
+                    </div>
+
+                    <div class="terms-field">
+                        <label class="remember-option" asp-for="AcceptPrivacyPolicy">
+                            <input asp-for="AcceptPrivacyPolicy" />
+                            <span>
+                                ฉันยอมรับ
+                                <a asp-controller="Home" asp-action="Privacy">นโยบายความเป็นส่วนตัว</a>
+                            </span>
+                        </label>
+                        <span asp-validation-for="AcceptPrivacyPolicy" class="field-validation"></span>
+                    </div>
+
+                    <button id="register-submit" type="submit" class="primary-action">
+                        สร้างบัญชีฟรี
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 12h14M14 7l5 5-5 5" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
+                toggle.addEventListener('click', () => {
+                    const input = document.getElementById(toggle.dataset.passwordToggle);
+                    if (!input) return;
+
+                    const shouldShow = input.type === 'password';
+                    input.type = shouldShow ? 'text' : 'password';
+                    toggle.setAttribute('aria-pressed', shouldShow.toString());
+                    toggle.setAttribute('aria-label', shouldShow ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
+                });
+            });
+        })();
+    </script>
+}

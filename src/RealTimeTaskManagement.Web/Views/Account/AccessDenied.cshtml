@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "ไม่มีสิทธิ์เข้าถึง";
+}
+
+<section class="py-5 text-center">
+    <div class="mx-auto" style="max-width: 620px;">
+        <p class="mb-2 text-danger fw-semibold">ACCESS DENIED</p>
+        <h1 class="display-5 fw-bold">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h1>
+        <p class="lead mt-3 text-secondary">
+            กรุณาตรวจสอบบัญชีหรือสิทธิ์ในโปรเจกต์ แล้วลองอีกครั้ง
+        </p>
+        <a class="btn btn-primary mt-3" asp-controller="Home" asp-action="Index">
+            กลับหน้าหลัก
+        </a>
+    </div>
+</section>

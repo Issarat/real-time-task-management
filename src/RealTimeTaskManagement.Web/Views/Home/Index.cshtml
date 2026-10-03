@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "จัดการงานร่วมกับทีม";
+}
+
+<section class="py-5 text-center">
+    <div class="mx-auto" style="max-width: 720px;">
+        <p class="mb-2 text-primary fw-semibold">TASKFLOW</p>
+        <h1 class="display-4 fw-bold">จัดการงานร่วมกับทีมแบบ Real-time</h1>
+        <p class="lead mt-3 text-secondary">
+            สร้างโปรเจกต์ วางแผนงานบน Kanban board และติดตามความคืบหน้าของทีมในที่เดียว
+        </p>
+
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span class="alert alert-success mb-0" role="status">
+                    เข้าสู่ระบบแล้ว — ขั้นต่อไปคือหน้า Project dashboard
+                </span>
+            }
+            else
+            {
+                <a class="btn btn-primary btn-lg"
+                   asp-controller="Account"
+                   asp-action="Register">
+                    เริ่มต้นใช้งาน
+                </a>
+                <a class="btn btn-outline-primary btn-lg"
+                   asp-controller="Account"
+                   asp-action="Login">
+                    เข้าสู่ระบบ
+                </a>
+            }
+        </div>
+    </div>
+</section>

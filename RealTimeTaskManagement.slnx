@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RealTimeTaskManagement.Application/RealTimeTaskManagement.Application.csproj" />
+    <Project Path="src/RealTimeTaskManagement.Domain/RealTimeTaskManagement.Domain.csproj" />
+    <Project Path="src/RealTimeTaskManagement.Infrastructure/RealTimeTaskManagement.Infrastructure.csproj" />
+    <Project Path="src/RealTimeTaskManagement.Web/RealTimeTaskManagement.Web.csproj" />
+  </Folder>
+</Solution>
