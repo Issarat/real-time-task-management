@@ -1,0 +1,109 @@
+@model DashboardLayoutViewModel
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TaskFlow</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/board.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-shell">
+        <aside class="dashboard-sidebar" id="dashboard-sidebar" aria-label="เมนูหลัก">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m7.5 12 3 3 6-6" /></svg>
+                </span>
+                <span>TaskFlow</span>
+            </div>
+
+            <p class="sidebar-label">WORKSPACE</p>
+            <nav class="sidebar-nav">
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="sidebar-link @(Model.ActiveNavigation == "Project" ? "is-active" : null)"
+                   aria-current="@(Model.ActiveNavigation == "Project" ? "page" : null)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 4v16M9 10h11" /></svg>
+                    <span>Kanban</span>
+                    @if (Model.ActiveNavigation == "Project")
+                    {
+                        <span class="sidebar-link-dot"></span>
+                    }
+                </a>
+            </nav>
+
+            <div class="sidebar-project-card">
+                <div class="sidebar-project-title">
+                    <span class="sidebar-project-icon">+</span>
+                    <div>
+                        <strong>สร้างบอร์ดใหม่</strong>
+                        <small>เริ่มต้นโปรเจกต์ของคุณ</small>
+                    </div>
+                </div>
+                <button type="button">+ New board</button>
+            </div>
+
+            <div class="sidebar-spacer"></div>
+
+            <div class="sidebar-user">
+                <span class="avatar avatar-blue">@Model.CurrentUserInitials</span>
+                <span class="sidebar-user-copy">
+                    <strong>@Model.CurrentUserName</strong>
+                    <small>@Model.CurrentUserEmail</small>
+                </span>
+                <form asp-controller="Account" asp-action="Logout" asp-route-returnUrl="/login" method="post">
+                    <button class="sidebar-logout" type="submit" title="ออกจากระบบ" aria-label="ออกจากระบบ">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5M14 8l4 4-4 4M8 12h10" /></svg>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <button class="sidebar-overlay" type="button" data-sidebar-close aria-label="ปิดเมนู"></button>
+
+        <section class="dashboard-workspace">
+            <header class="dashboard-topbar">
+                <div class="topbar-title">
+                    <button class="mobile-menu-button" type="button" data-sidebar-toggle aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="เปิดเมนู">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                    </button>
+                    <div>
+                        <strong>@Model.PageTitle</strong>
+                        <small>@Model.PageSubtitle</small>
+                    </div>
+                </div>
+
+                <div class="topbar-actions">
+                    @if (Model.ShowSearch)
+                    {
+                        <label class="board-search">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+                            <input type="search" placeholder="ค้นหา..." aria-label="ค้นหา" />
+                        </label>
+                    }
+                    @if (Model.ShowNotifications)
+                    {
+                        <button class="icon-button notification-button" type="button" aria-label="การแจ้งเตือน">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
+                            <span></span>
+                        </button>
+                    }
+                    <button class="new-task-button" type="button">
+                        <span>+</span> @Model.PrimaryActionLabel
+                    </button>
+                    <span class="avatar avatar-soft-blue">@Model.CurrentUserInitials</span>
+                </div>
+            </header>
+
+            <main class="dashboard-content">
+                @RenderBody()
+            </main>
+        </section>
+    </div>
+
+    <script src="~/js/board.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

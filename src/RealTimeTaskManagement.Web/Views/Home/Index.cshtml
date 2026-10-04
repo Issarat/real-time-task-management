@@ -1,35 +1,35 @@
+@model ProjectsIndexViewModel
 @{
-    ViewData["Title"] = "จัดการงานร่วมกับทีม";
+    ViewData["Title"] = "Project";
+    Layout = "/Views/Shared/_DashboardLayout.cshtml";
 }
 
-<section class="py-5 text-center">
-    <div class="mx-auto" style="max-width: 720px;">
-        <p class="mb-2 text-primary fw-semibold">TASKFLOW</p>
-        <h1 class="display-4 fw-bold">จัดการงานร่วมกับทีมแบบ Real-time</h1>
-        <p class="lead mt-3 text-secondary">
-            สร้างโปรเจกต์ วางแผนงานบน Kanban board และติดตามความคืบหน้าของทีมในที่เดียว
-        </p>
+@section Styles {
+    <link rel="stylesheet" href="~/css/projects.css" asp-append-version="true" />
+}
 
-        <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <span class="alert alert-success mb-0" role="status">
-                    เข้าสู่ระบบแล้ว — ขั้นต่อไปคือหน้า Project dashboard
-                </span>
-            }
-            else
-            {
-                <a class="btn btn-primary btn-lg"
-                   asp-controller="Account"
-                   asp-action="Register">
-                    เริ่มต้นใช้งาน
-                </a>
-                <a class="btn btn-outline-primary btn-lg"
-                   asp-controller="Account"
-                   asp-action="Login">
-                    เข้าสู่ระบบ
-                </a>
-            }
+<section class="project-entry-page" aria-labelledby="empty-project-title">
+    <div class="empty-project-overview">
+        <div class="empty-project-copy">
+            <p>YOUR WORKSPACE</p>
+            <h1 id="empty-project-title">ยังไม่มีโปรเจกต์...</h1>
+            <span>สร้างโปรเจกต์ใหม่ หรือใช้ Invite Code เพื่อเข้าร่วมทีมของคุณ</span>
         </div>
+    </div>
+
+    <div class="project-entry-divider" aria-hidden="true"></div>
+
+    <div class="project-entry-actions" aria-label="เริ่มต้นใช้งานโปรเจกต์">
+        <button class="project-action project-action-primary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            สร้างโปรเจกต์
+        </button>
+
+        <span class="project-action-separator">หรือ</span>
+
+        <button class="project-action project-action-secondary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            เข้าร่วมโปรเจกต์
+        </button>
     </div>
 </section>
