@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RealTimeTaskManagement.Application.Projects;
 using RealTimeTaskManagement.Infrastructure.Identity;
 using RealTimeTaskManagement.Web.Models;
 using RealTimeTaskManagement.Web.Models.Board;
@@ -8,7 +10,9 @@ using RealTimeTaskManagement.Web.Models.Projects;
 
 namespace RealTimeTaskManagement.Web.Controllers;
 
-public sealed class HomeController(UserManager<ApplicationUser> userManager) : Controller
+public sealed class HomeController(
+    UserManager<ApplicationUser> userManager,
+    IProjectService projectService) : Controller
 {
     [HttpGet("/")]
     public async Task<IActionResult> Index()
@@ -19,13 +23,113 @@ public sealed class HomeController(UserManager<ApplicationUser> userManager) : C
         }
 
         var user = await userManager.GetUserAsync(User);
-        var displayName = string.IsNullOrWhiteSpace(user?.DisplayName)
-            ? User.Identity.Name ?? "สมาชิก"
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+            ? user.Email ?? "สมาชิก"
             : user.DisplayName;
+        var projects = await projectService.GetForUserAsync(user.Id);
 
         return View(CreateProjectsPage(
             displayName,
-            user?.Email ?? User.Identity.Name ?? string.Empty));
+            user.Email ?? string.Empty,
+            projects));
+    }
+
+    [Authorize]
+    [HttpPost("/projects/create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProject(
+        [Bind(Prefix = nameof(ProjectsIndexViewModel.CreateProject))]
+        CreateProjectViewModel model,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var currentProjects = await projectService.GetForUserAsync(
+                user.Id,
+                cancellationToken);
+            var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+                ? user.Email ?? "สมาชิก"
+                : user.DisplayName;
+
+            return View("Index", CreateProjectsPage(
+                displayName,
+                user.Email ?? string.Empty,
+                currentProjects,
+                model,
+                openCreateProjectModal: true));
+        }
+
+        var createdProject = await projectService.CreateAsync(
+            new CreateProjectRequest(
+                model.Name,
+                model.Description,
+                user.Id),
+            cancellationToken);
+
+        TempData["ProjectCreatedMessage"] =
+            $"สร้างโปรเจกต์ “{createdProject.Name}” เรียบร้อยแล้ว";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize]
+    [HttpPost("/projects/join")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> JoinProject(
+        [Bind(Prefix = nameof(ProjectsIndexViewModel.JoinProject))]
+        JoinProjectViewModel model,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        JoinProjectResult? joinResult = null;
+        if (ModelState.IsValid)
+        {
+            joinResult = await projectService.JoinAsync(
+                new JoinProjectRequest(model.InviteCode, user.Id),
+                cancellationToken);
+
+            if (joinResult.Status == JoinProjectStatus.Joined)
+            {
+                TempData["ProjectJoinedMessage"] =
+                    $"เข้าร่วมโปรเจกต์ “{joinResult.ProjectName}” เรียบร้อยแล้ว";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            ModelState.AddModelError(
+                $"{nameof(ProjectsIndexViewModel.JoinProject)}.{nameof(JoinProjectViewModel.InviteCode)}",
+                CreateJoinProjectError(joinResult));
+        }
+
+        var currentProjects = await projectService.GetForUserAsync(
+            user.Id,
+            cancellationToken);
+        var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+            ? user.Email ?? "สมาชิก"
+            : user.DisplayName;
+
+        return View("Index", CreateProjectsPage(
+            displayName,
+            user.Email ?? string.Empty,
+            currentProjects,
+            joinProject: model,
+            openJoinProjectModal: true));
     }
 
     [HttpGet("/privacy")]
@@ -46,13 +150,46 @@ public sealed class HomeController(UserManager<ApplicationUser> userManager) : C
 
     private static ProjectsIndexViewModel CreateProjectsPage(
         string currentUserName,
-        string currentUserEmail)
+        string currentUserEmail,
+        IReadOnlyList<ProjectSummary> projects,
+        CreateProjectViewModel? createProject = null,
+        JoinProjectViewModel? joinProject = null,
+        bool openCreateProjectModal = false,
+        bool openJoinProjectModal = false)
     {
         var initials = CreateInitials(currentUserName);
         return new ProjectsIndexViewModel(
             currentUserName,
             currentUserEmail,
-            initials);
+            initials,
+            projects
+                .Select(project => new ProjectCardViewModel(
+                    project.Id,
+                    project.Name,
+                    project.Slug,
+                    project.Description ?? "ยังไม่มีคำอธิบาย",
+                    project.Role.ToString(),
+                    project.MemberCount,
+                    project.CreatedAtUtc))
+                .ToArray(),
+            createProject ?? new CreateProjectViewModel(),
+            joinProject ?? new JoinProjectViewModel(),
+            openCreateProjectModal,
+            openJoinProjectModal);
+    }
+
+    private static string CreateJoinProjectError(JoinProjectResult result)
+    {
+        return result.Status switch
+        {
+            JoinProjectStatus.AlreadyMember =>
+                $"คุณเป็นสมาชิกของโปรเจกต์ “{result.ProjectName}” อยู่แล้ว",
+            JoinProjectStatus.Expired => "Invite Code นี้หมดอายุแล้ว",
+            JoinProjectStatus.Revoked => "Invite Code นี้ถูกยกเลิกแล้ว",
+            JoinProjectStatus.UsageLimitReached =>
+                "Invite Code นี้มีผู้ใช้งานครบจำนวนแล้ว",
+            _ => "ไม่พบ Invite Code กรุณาตรวจสอบแล้วลองอีกครั้ง"
+        };
     }
 
     private static string CreateInitials(string displayName)

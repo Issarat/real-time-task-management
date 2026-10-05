@@ -8,28 +8,238 @@
     <link rel="stylesheet" href="~/css/projects.css" asp-append-version="true" />
 }
 
-<section class="project-entry-page" aria-labelledby="empty-project-title">
-    <div class="empty-project-overview">
-        <div class="empty-project-copy">
-            <p>YOUR WORKSPACE</p>
-            <h1 id="empty-project-title">ยังไม่มีโปรเจกต์...</h1>
-            <span>สร้างโปรเจกต์ใหม่ หรือใช้ Invite Code เพื่อเข้าร่วมทีมของคุณ</span>
+@if (TempData["ProjectCreatedMessage"] is string createdMessage)
+{
+    <div class="project-toast" role="status" aria-atomic="true" data-project-toast data-auto-dismiss-ms="5000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 12.5 3 3 8-8" /></svg>
+        <span>@createdMessage</span>
+        <button type="button" data-toast-dismiss aria-label="ปิดการแจ้งเตือน">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+        </button>
+    </div>
+}
+
+@if (TempData["ProjectJoinedMessage"] is string joinedMessage)
+{
+    <div class="project-toast" role="status" aria-atomic="true" data-project-toast data-auto-dismiss-ms="5000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 12.5 3 3 8-8" /></svg>
+        <span>@joinedMessage</span>
+        <button type="button" data-toast-dismiss aria-label="ปิดการแจ้งเตือน">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+        </button>
+    </div>
+}
+
+@if (Model.Projects.Count == 0)
+{
+    <section class="project-entry-page" aria-labelledby="empty-project-title">
+        <div class="empty-project-overview">
+            <div class="empty-project-copy">
+                <p>YOUR WORKSPACE</p>
+                <h1 id="empty-project-title">ยังไม่มีโปรเจกต์...</h1>
+                <span>สร้างโปรเจกต์ใหม่ หรือใช้ Invite Code เพื่อเข้าร่วมทีมของคุณ</span>
+            </div>
         </div>
-    </div>
 
-    <div class="project-entry-divider" aria-hidden="true"></div>
+        <div class="project-entry-divider" aria-hidden="true"></div>
 
-    <div class="project-entry-actions" aria-label="เริ่มต้นใช้งานโปรเจกต์">
-        <button class="project-action project-action-primary" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-            สร้างโปรเจกต์
-        </button>
+        <div class="project-entry-actions" aria-label="เริ่มต้นใช้งานโปรเจกต์">
+            <button class="project-action project-action-primary"
+                    type="button"
+                    data-dialog-open="create-project-dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                สร้างโปรเจกต์
+            </button>
 
-        <span class="project-action-separator">หรือ</span>
+            <span class="project-action-separator">หรือ</span>
 
-        <button class="project-action project-action-secondary" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-            เข้าร่วมโปรเจกต์
-        </button>
-    </div>
-</section>
+            <button class="project-action project-action-secondary"
+                    type="button"
+                    data-dialog-open="join-project-dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                เข้าร่วมโปรเจกต์
+            </button>
+        </div>
+    </section>
+}
+else
+{
+    <section class="projects-overview" aria-labelledby="projects-title">
+        <header class="projects-overview-header">
+            <div>
+                <p>YOUR WORKSPACE</p>
+                <h1 id="projects-title">โปรเจกต์ของคุณ</h1>
+                <span>@Model.Projects.Count โปรเจกต์</span>
+            </div>
+            <div class="projects-header-actions">
+                <button class="project-action project-action-secondary"
+                        type="button"
+                        data-dialog-open="join-project-dialog">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8l4 4-4 4M18 12H7M7 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" /></svg>
+                    เข้าร่วมโปรเจกต์
+                </button>
+                <button class="project-action project-action-primary"
+                        type="button"
+                        data-dialog-open="create-project-dialog">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                    สร้างโปรเจกต์
+                </button>
+            </div>
+        </header>
+
+        <div class="project-card-grid">
+            @foreach (var project in Model.Projects)
+            {
+                <article class="project-card">
+                    <header>
+                        <span class="project-card-mark" aria-hidden="true">
+                            @project.Name[..1].ToUpperInvariant()
+                        </span>
+                        <span class="project-role">@project.Role</span>
+                    </header>
+                    <h2>@project.Name</h2>
+                    <p>@project.Description</p>
+                    <footer>
+                        <span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5" /></svg>
+                            @project.MemberCount สมาชิก
+                        </span>
+                        <a asp-controller="Projects"
+                           asp-action="Board"
+                           asp-route-slug="@project.Slug"
+                           aria-label="เปิดโปรเจกต์ @project.Name">
+                            เปิดโปรเจกต์
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5" /></svg>
+                        </a>
+                    </footer>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<dialog id="create-project-dialog"
+        class="project-dialog"
+        aria-labelledby="create-project-title"
+        data-open-on-load="@Model.OpenCreateProjectModal.ToString().ToLowerInvariant()">
+    <form asp-controller="Home"
+          asp-action="CreateProject"
+          method="post"
+          class="project-dialog-card">
+        <header class="project-dialog-header">
+            <div class="project-dialog-heading">
+                <span class="project-dialog-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                </span>
+                <div>
+                    <h2 id="create-project-title">สร้างโปรเจกต์ใหม่</h2>
+                    <p>ตั้งชื่อพื้นที่ทำงานสำหรับคุณและทีม</p>
+                </div>
+            </div>
+            <button class="dialog-close-button"
+                    type="button"
+                    data-dialog-close
+                    aria-label="ปิดหน้าต่าง">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            </button>
+        </header>
+
+        <div class="project-dialog-body">
+            <div asp-validation-summary="ModelOnly" class="project-validation-summary" role="alert"></div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateProject.Name">ชื่อโปรเจกต์ <span>*</span></label>
+                <input asp-for="CreateProject.Name"
+                       placeholder="เช่น Product Launch Q4"
+                       autocomplete="off"
+                       data-dialog-autofocus />
+                <span asp-validation-for="CreateProject.Name" class="project-field-validation"></span>
+                <small>ชื่อที่สมาชิกในทีมจะมองเห็น</small>
+            </div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateProject.Description">คำอธิบาย <em>ไม่บังคับ</em></label>
+                <textarea asp-for="CreateProject.Description"
+                          rows="4"
+                          placeholder="อธิบายเป้าหมายของโปรเจกต์สั้น ๆ"></textarea>
+                <span asp-validation-for="CreateProject.Description" class="project-field-validation"></span>
+                <small class="character-count"><span data-description-count>0</span>/500</small>
+            </div>
+        </div>
+
+        <footer class="project-dialog-footer">
+            <button class="dialog-cancel-button" type="button" data-dialog-close>ยกเลิก</button>
+            <button class="dialog-submit-button" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                สร้างโปรเจกต์
+            </button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog id="join-project-dialog"
+        class="project-dialog"
+        aria-labelledby="join-project-title"
+        data-open-on-load="@Model.OpenJoinProjectModal.ToString().ToLowerInvariant()">
+    <form asp-controller="Home"
+          asp-action="JoinProject"
+          method="post"
+          class="project-dialog-card">
+        <header class="project-dialog-header">
+            <div class="project-dialog-heading">
+                <span class="project-dialog-icon project-dialog-icon-dark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M14 8l4 4-4 4M18 12H7M7 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" /></svg>
+                </span>
+                <div>
+                    <h2 id="join-project-title">เข้าร่วมโปรเจกต์</h2>
+                    <p>กรอก Invite Code ที่ได้รับจากเจ้าของโปรเจกต์</p>
+                </div>
+            </div>
+            <button class="dialog-close-button"
+                    type="button"
+                    data-dialog-close
+                    aria-label="ปิดหน้าต่าง">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            </button>
+        </header>
+
+        <div class="project-dialog-body">
+            <div asp-validation-summary="ModelOnly" class="project-validation-summary" role="alert"></div>
+
+            <div class="project-form-field">
+                <label asp-for="JoinProject.InviteCode">Invite Code <span>*</span></label>
+                <input asp-for="JoinProject.InviteCode"
+                       class="invite-code-input"
+                       placeholder="เช่น TFLW-7K9P-2M4X"
+                       autocomplete="off"
+                       spellcheck="false"
+                       data-invite-code
+                       data-dialog-autofocus />
+                <span asp-validation-for="JoinProject.InviteCode" class="project-field-validation"></span>
+                <small>ใช้ตัวอักษรภาษาอังกฤษ ตัวเลข และเครื่องหมาย -</small>
+            </div>
+
+            <div class="invite-code-help">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+                <p>
+                    <strong>Invite Code อยู่ที่ไหน?</strong>
+                    ขอรหัสจาก Owner ของโปรเจกต์ เมื่อเข้าร่วมแล้วคุณจะได้รับสิทธิ์ตามที่ Owner กำหนด
+                </p>
+            </div>
+        </div>
+
+        <footer class="project-dialog-footer">
+            <button class="dialog-cancel-button" type="button" data-dialog-close>ยกเลิก</button>
+            <button class="dialog-submit-button" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8l4 4-4 4M18 12H7M7 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" /></svg>
+                เข้าร่วมโปรเจกต์
+            </button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/projects.js" asp-append-version="true"></script>
+}

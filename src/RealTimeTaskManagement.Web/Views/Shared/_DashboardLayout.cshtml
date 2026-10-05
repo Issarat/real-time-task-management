@@ -42,7 +42,7 @@
                         <small>เริ่มต้นโปรเจกต์ของคุณ</small>
                     </div>
                 </div>
-                <button type="button">+ New board</button>
+                <button type="button" data-dialog-open="@Model.PrimaryActionDialogId">+ New board</button>
             </div>
 
             <div class="sidebar-spacer"></div>
@@ -90,7 +90,9 @@
                             <span></span>
                         </button>
                     }
-                    <button class="new-task-button" type="button">
+                    <button class="new-task-button"
+                            type="button"
+                            data-dialog-open="@Model.PrimaryActionDialogId">
                         <span>+</span> @Model.PrimaryActionLabel
                     </button>
                     <span class="avatar avatar-soft-blue">@Model.CurrentUserInitials</span>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.DataProtection;
 using RealTimeTaskManagement.Infrastructure;
+using RealTimeTaskManagement.Web.Development;
 using RealTimeTaskManagement.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    await LocalDbDevelopmentStartup.EnsureStartedAsync(
+        app.Configuration.GetConnectionString("DefaultConnection"),
+        app.Logger,
+        app.Lifetime.ApplicationStopping);
+
     app.UseMigrationsEndPoint();
 }
 else

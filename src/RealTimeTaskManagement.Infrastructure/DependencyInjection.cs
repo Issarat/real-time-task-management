@@ -39,6 +39,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<IProjectMembershipService, ProjectMembershipService>();
+        services.AddScoped<IProjectService, ProjectService>();
 
         return services;
     }

@@ -1,0 +1,235 @@
+@model KanbanBoardViewModel
+@{
+    ViewData["Title"] = Model.ProjectName;
+    Layout = "/Views/Shared/_DashboardLayout.cshtml";
+    var members = Model.Members ?? [];
+    var visibleMembers = members.Take(4).ToArray();
+    var additionalMemberCount = Math.Max(0, members.Count - visibleMembers.Length);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/projects.css" asp-append-version="true" />
+}
+
+@if (TempData["BoardMessage"] is string boardMessage)
+{
+    <div class="project-toast" role="status" aria-atomic="true" data-project-toast data-auto-dismiss-ms="5000">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 12.5 3 3 8-8" /></svg>
+        <span>@boardMessage</span>
+        <button type="button" data-toast-dismiss aria-label="ปิดการแจ้งเตือน">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+        </button>
+    </div>
+}
+
+<section class="board-page" data-board-root data-project-id="@Model.ProjectId">
+    <header class="project-header">
+        <div>
+            <div class="project-title-row">
+                <h1>@Model.ProjectName</h1>
+                <span class="project-status"><i></i> พร้อมใช้งาน</span>
+            </div>
+            <p>@Model.ProjectDescription</p>
+        </div>
+
+        <div class="project-members" aria-label="สมาชิกโปรเจกต์ @members.Count คน">
+            <div class="avatar-stack">
+                @foreach (var member in visibleMembers)
+                {
+                    <span class="avatar avatar-@member.Tone"
+                          title="@member.DisplayName (@member.Role)">
+                        @member.Initials
+                    </span>
+                }
+                @if (additionalMemberCount > 0)
+                {
+                    <span class="member-count">+@additionalMemberCount</span>
+                }
+            </div>
+            <button class="invite-button"
+                    type="button"
+                    disabled
+                    title="ระบบเชิญสมาชิกจะเพิ่มในขั้นถัดไป"
+                    aria-label="เชิญสมาชิก (เร็ว ๆ นี้)">+</button>
+        </div>
+    </header>
+
+    <div class="board-toolbar">
+        <div class="board-tabs" role="tablist" aria-label="รูปแบบการแสดงงาน">
+            <button class="is-active" type="button" role="tab" aria-selected="true">Board</button>
+            <button type="button" role="tab" aria-selected="false" disabled>List</button>
+        </div>
+
+        <div class="board-tools">
+            <button class="board-add-task"
+                    type="button"
+                    data-dialog-open="create-task-dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                เพิ่มงานใหม่
+            </button>
+            <button type="button" disabled title="ตัวกรองจะเพิ่มในขั้นถัดไป">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v5l-4 2v-7z" /></svg>
+                ตัวกรอง
+            </button>
+            <button type="button" disabled title="การจัดเรียงจะเพิ่มในขั้นถัดไป">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h9M8 18h6M4 6h.01M4 12h.01M4 18h.01" /></svg>
+                จัดเรียง
+            </button>
+            <button class="more-button" type="button" disabled aria-label="ตัวเลือกเพิ่มเติม">•••</button>
+        </div>
+    </div>
+
+    <div class="kanban-board" aria-label="Kanban board">
+        @foreach (var column in Model.Columns)
+        {
+            <section class="kanban-column" data-board-column="@column.Id">
+                <header class="column-header">
+                    <div>
+                        <span class="column-dot tone-@column.Tone" aria-hidden="true"></span>
+                        <h2>@column.Name</h2>
+                        <span class="column-count tone-@column.Tone">@column.Tasks.Count</span>
+                    </div>
+                    <button type="button"
+                            data-dialog-open="create-task-dialog"
+                            data-task-column="@column.Id"
+                            title="เพิ่มงานใน @column.Name"
+                            aria-label="เพิ่มงานใน @column.Name">+</button>
+                </header>
+
+                <div class="task-list">
+                    @foreach (var task in column.Tasks)
+                    {
+                        <article class="task-card"
+                                 data-task-card
+                                 data-search-text="@($"{task.Title} {task.Description} {task.Tag} {task.AssigneeName}")">
+                            <span class="task-tag tag-@task.TagTone">@task.Tag</span>
+                            <h3>@task.Title</h3>
+                            @if (!string.IsNullOrWhiteSpace(task.Description))
+                            {
+                                <p>@task.Description</p>
+                            }
+
+                            @if (task.Priority == "High")
+                            {
+                                <span class="priority-badge"><i></i> สำคัญ</span>
+                            }
+
+                            <footer class="task-footer">
+                                <div class="task-meta">
+                                    @if (!string.IsNullOrWhiteSpace(task.DueDate))
+                                    {
+                                        <span>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></svg>
+                                            @task.DueDate
+                                        </span>
+                                    }
+                                    @if (task.IsCompleted)
+                                    {
+                                        <span class="task-completed" title="เสร็จแล้ว">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 12.5 3 3 8-8" /></svg>
+                                        </span>
+                                    }
+                                </div>
+                                <span class="avatar avatar-small avatar-@task.AssigneeTone"
+                                      title="ผู้รับผิดชอบ: @task.AssigneeName">
+                                    @task.AssigneeInitials
+                                </span>
+                            </footer>
+                        </article>
+                    }
+                    <p class="column-empty" data-column-empty hidden="@(column.Tasks.Count > 0)">
+                        ยังไม่มีงานในคอลัมน์นี้
+                    </p>
+                </div>
+
+                <button class="add-task-card"
+                        type="button"
+                        data-dialog-open="create-task-dialog"
+                        data-task-column="@column.Id">
+                    + เพิ่มงาน
+                </button>
+            </section>
+        }
+    </div>
+</section>
+
+<dialog id="create-task-dialog"
+        class="project-dialog task-dialog"
+        aria-labelledby="create-task-title"
+        data-open-on-load="@Model.OpenCreateTaskModal.ToString().ToLowerInvariant()">
+    <form asp-controller="Projects"
+          asp-action="CreateTask"
+          asp-route-slug="@Model.ProjectSlug"
+          method="post"
+          class="project-dialog-card">
+        <header class="project-dialog-header">
+            <div class="project-dialog-heading">
+                <span class="project-dialog-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                </span>
+                <div>
+                    <h2 id="create-task-title">เพิ่มงานใหม่</h2>
+                    <p>เพิ่มงานลงในบอร์ด @Model.ProjectName</p>
+                </div>
+            </div>
+            <button class="dialog-close-button" type="button" data-dialog-close aria-label="ปิดหน้าต่าง">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            </button>
+        </header>
+
+        <div class="project-dialog-body">
+            <div asp-validation-summary="ModelOnly" class="project-validation-summary" role="alert"></div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateTask.BoardColumnId">คอลัมน์ <span>*</span></label>
+                <select asp-for="CreateTask.BoardColumnId" data-task-column-select>
+                    @foreach (var column in Model.Columns)
+                    {
+                        <option value="@column.Id">@column.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CreateTask.BoardColumnId" class="project-field-validation"></span>
+            </div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateTask.Title">ชื่องาน <span>*</span></label>
+                <input asp-for="CreateTask.Title"
+                       placeholder="เช่น ออกแบบหน้า Dashboard"
+                       autocomplete="off"
+                       data-dialog-autofocus />
+                <span asp-validation-for="CreateTask.Title" class="project-field-validation"></span>
+            </div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateTask.Description">รายละเอียด <em>ไม่บังคับ</em></label>
+                <textarea asp-for="CreateTask.Description"
+                          rows="4"
+                          placeholder="รายละเอียดของงาน"></textarea>
+                <span asp-validation-for="CreateTask.Description" class="project-field-validation"></span>
+            </div>
+
+            <div class="project-form-field">
+                <label asp-for="CreateTask.Priority">ความสำคัญ</label>
+                <select asp-for="CreateTask.Priority">
+                    <option value="Low">ต่ำ</option>
+                    <option value="Medium">ปานกลาง</option>
+                    <option value="High">สูง</option>
+                </select>
+            </div>
+        </div>
+
+        <footer class="project-dialog-footer">
+            <button class="dialog-cancel-button" type="button" data-dialog-close>ยกเลิก</button>
+            <button class="dialog-submit-button" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                เพิ่มงาน
+            </button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/projects.js" asp-append-version="true"></script>
+}
