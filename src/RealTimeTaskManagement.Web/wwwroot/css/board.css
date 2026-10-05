@@ -35,6 +35,13 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Keep removed actions hidden while a running server still serves cached Razor markup. */
+.new-task-button,
+.add-task-card,
+.column-header > button {
+    display: none !important;
+}
+
 .dashboard-body svg {
     display: block;
     fill: none;
@@ -190,16 +197,20 @@
     font-size: 9px;
 }
 
-.sidebar-project-card > button {
+.sidebar-project-card > button,
+.sidebar-project-card > a {
+    display: grid;
     width: 100%;
     height: 28px;
     margin-top: 10px;
+    place-items: center;
     border: 0;
     border-radius: 6px;
     color: #b6c2d5;
     background: rgba(255, 255, 255, .06);
     font-size: 9px;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .sidebar-spacer {
@@ -409,33 +420,6 @@
     background: #f04464;
 }
 
-.new-task-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 38px;
-    gap: 7px;
-    padding: 0 15px;
-    border: 0;
-    border-radius: 9px;
-    color: #fff;
-    background: var(--board-blue);
-    box-shadow: 0 7px 16px rgba(47, 111, 237, .2);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.new-task-button:hover {
-    background: var(--board-blue-dark);
-}
-
-.new-task-button span {
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 1;
-}
-
 .avatar {
     display: inline-grid;
     width: 32px;
@@ -628,6 +612,26 @@
     color: var(--board-blue);
 }
 
+.board-tools .board-add-task {
+    border-color: var(--board-blue);
+    color: #fff;
+    background: var(--board-blue);
+    box-shadow: 0 5px 12px rgba(47, 111, 237, .16);
+}
+
+.board-tools .board-add-task:hover {
+    border-color: var(--board-blue-dark);
+    color: #fff;
+    background: var(--board-blue-dark);
+}
+
+.board-tools button:disabled,
+.invite-button:disabled,
+.board-tabs button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
 .board-tools button svg {
     width: 14px;
     height: 14px;
@@ -682,17 +686,6 @@
     font-weight: 750;
 }
 
-.column-header > button {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: 0;
-    color: #9aa4b5;
-    background: transparent;
-    font-size: 10px;
-    cursor: pointer;
-}
-
 .column-dot {
     width: 6px;
     height: 6px;
@@ -736,6 +729,21 @@
 .task-card:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 22px rgba(29, 45, 72, .08);
+}
+
+.task-card[hidden] {
+    display: none;
+}
+
+.column-empty {
+    margin: 22px 6px;
+    color: #98a3b4;
+    font-size: 9px;
+    text-align: center;
+}
+
+.column-empty.is-hidden {
+    display: none;
 }
 
 .task-tag,
@@ -857,24 +865,6 @@
     stroke-width: 2.5;
 }
 
-.add-task-card {
-    width: 100%;
-    min-height: 34px;
-    margin-top: auto;
-    padding: 0;
-    border: 1px solid rgba(222, 228, 237, .8);
-    border-radius: 8px;
-    color: #7f8b9e;
-    background: rgba(255, 255, 255, .55);
-    font-size: 9px;
-    cursor: pointer;
-}
-
-.add-task-card:hover {
-    color: var(--board-blue);
-    background: #fff;
-}
-
 @media (max-width: 1180px) {
     .kanban-board {
         grid-template-columns: repeat(4, minmax(260px, 1fr));
@@ -949,16 +939,6 @@
 
     .topbar-actions {
         gap: 7px;
-    }
-
-    .new-task-button {
-        width: 38px;
-        padding: 0;
-        font-size: 0;
-    }
-
-    .new-task-button span {
-        font-size: 20px;
     }
 
     .project-header {

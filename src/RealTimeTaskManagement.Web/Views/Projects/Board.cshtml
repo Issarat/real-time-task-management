@@ -89,11 +89,6 @@
                         <h2>@column.Name</h2>
                         <span class="column-count tone-@column.Tone">@column.Tasks.Count</span>
                     </div>
-                    <button type="button"
-                            data-dialog-open="create-task-dialog"
-                            data-task-column="@column.Id"
-                            title="เพิ่มงานใน @column.Name"
-                            aria-label="เพิ่มงานใน @column.Name">+</button>
                 </header>
 
                 <div class="task-list">
@@ -137,17 +132,11 @@
                             </footer>
                         </article>
                     }
-                    <p class="column-empty" data-column-empty hidden="@(column.Tasks.Count > 0)">
+                    <p class="column-empty @(column.Tasks.Count > 0 ? "is-hidden" : null)" data-column-empty>
                         ยังไม่มีงานในคอลัมน์นี้
                     </p>
                 </div>
 
-                <button class="add-task-card"
-                        type="button"
-                        data-dialog-open="create-task-dialog"
-                        data-task-column="@column.Id">
-                    + เพิ่มงาน
-                </button>
             </section>
         }
     </div>
@@ -182,7 +171,7 @@
 
             <div class="project-form-field">
                 <label asp-for="CreateTask.BoardColumnId">คอลัมน์ <span>*</span></label>
-                <select asp-for="CreateTask.BoardColumnId" data-task-column-select>
+                <select asp-for="CreateTask.BoardColumnId">
                     @foreach (var column in Model.Columns)
                     {
                         <option value="@column.Id">@column.Name</option>

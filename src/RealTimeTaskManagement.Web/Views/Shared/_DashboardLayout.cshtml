@@ -1,4 +1,10 @@
 @model DashboardLayoutViewModel
+@{
+    var isKanbanNavigation = Model.ActiveNavigation is "Project" or "Kanban";
+    var kanbanNavigationUrl = Model is KanbanBoardViewModel boardModel
+        ? Url.Action("Board", "Projects", new { slug = boardModel.ProjectSlug })
+        : Url.Action("Index", "Home");
+}
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -21,13 +27,12 @@
 
             <p class="sidebar-label">WORKSPACE</p>
             <nav class="sidebar-nav">
-                <a asp-controller="Home"
-                   asp-action="Index"
-                   class="sidebar-link @(Model.ActiveNavigation == "Project" ? "is-active" : null)"
-                   aria-current="@(Model.ActiveNavigation == "Project" ? "page" : null)">
+                <a href="@kanbanNavigationUrl"
+                   class="sidebar-link @(isKanbanNavigation ? "is-active" : null)"
+                   aria-current="@(isKanbanNavigation ? "page" : null)">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 4v16M9 10h11" /></svg>
                     <span>Kanban</span>
-                    @if (Model.ActiveNavigation == "Project")
+                    @if (isKanbanNavigation)
                     {
                         <span class="sidebar-link-dot"></span>
                     }
@@ -42,7 +47,14 @@
                         <small>เริ่มต้นโปรเจกต์ของคุณ</small>
                     </div>
                 </div>
-                <button type="button" data-dialog-open="@Model.PrimaryActionDialogId">+ New board</button>
+                @if (Model.ActiveNavigation == "Project")
+                {
+                    <button type="button" data-dialog-open="@Model.PrimaryActionDialogId">+ New board</button>
+                }
+                else
+                {
+                    <a asp-controller="Home" asp-action="Index">ดูโปรเจกต์ทั้งหมด</a>
+                }
             </div>
 
             <div class="sidebar-spacer"></div>
@@ -80,7 +92,7 @@
                     {
                         <label class="board-search">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
-                            <input type="search" placeholder="ค้นหา..." aria-label="ค้นหา" />
+                            <input type="search" placeholder="ค้นหา..." aria-label="ค้นหา" data-board-search />
                         </label>
                     }
                     @if (Model.ShowNotifications)
@@ -90,11 +102,6 @@
                             <span></span>
                         </button>
                     }
-                    <button class="new-task-button"
-                            type="button"
-                            data-dialog-open="@Model.PrimaryActionDialogId">
-                        <span>+</span> @Model.PrimaryActionLabel
-                    </button>
                     <span class="avatar avatar-soft-blue">@Model.CurrentUserInitials</span>
                 </div>
             </header>

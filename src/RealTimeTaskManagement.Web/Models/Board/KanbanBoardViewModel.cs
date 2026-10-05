@@ -8,7 +8,12 @@ public sealed record KanbanBoardViewModel(
     string CurrentUserName,
     string CurrentUserEmail,
     string CurrentUserInitials,
-    IReadOnlyList<KanbanColumnViewModel> Columns)
+    IReadOnlyList<KanbanColumnViewModel> Columns,
+    Guid ProjectId = default,
+    string ProjectSlug = "",
+    IReadOnlyList<KanbanMemberViewModel>? Members = null,
+    CreateTaskViewModel? CreateTask = null,
+    bool OpenCreateTaskModal = false)
     : DashboardLayoutViewModel(
         "Kanban",
         "จัดการทุกงานในที่เดียว",
@@ -18,12 +23,21 @@ public sealed record KanbanBoardViewModel(
         "Kanban",
         "เพิ่มงานใหม่",
         ShowSearch: true,
-        ShowNotifications: true);
+        ShowNotifications: true,
+        PrimaryActionDialogId: "create-task-dialog");
 
 public sealed record KanbanColumnViewModel(
     string Name,
     string Tone,
-    IReadOnlyList<KanbanTaskCardViewModel> Tasks);
+    IReadOnlyList<KanbanTaskCardViewModel> Tasks,
+    Guid Id = default,
+    string Key = "");
+
+public sealed record KanbanMemberViewModel(
+    string DisplayName,
+    string Initials,
+    string Tone,
+    string Role);
 
 public sealed record KanbanTaskCardViewModel(
     string Title,
@@ -36,4 +50,6 @@ public sealed record KanbanTaskCardViewModel(
     int? Progress = null,
     string? Priority = null,
     int CommentCount = 0,
-    bool IsCompleted = false);
+    bool IsCompleted = false,
+    Guid Id = default,
+    string AssigneeName = "");

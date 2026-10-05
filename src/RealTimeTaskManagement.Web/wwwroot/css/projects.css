@@ -273,6 +273,7 @@
 }
 
 .project-card {
+    position: relative;
     display: flex;
     min-height: 210px;
     flex-direction: column;
@@ -292,7 +293,8 @@
 .project-card > header,
 .project-card > footer,
 .project-card > footer span,
-.project-card > footer button {
+.project-card > footer button,
+.project-card > footer a {
     display: flex;
     align-items: center;
 }
@@ -358,7 +360,8 @@
     height: 14px;
 }
 
-.project-card > footer button {
+.project-card > footer button,
+.project-card > footer a {
     gap: 5px;
     padding: 0;
     border: 0;
@@ -367,6 +370,23 @@
     font-size: 9px;
     font-weight: 700;
     cursor: pointer;
+    text-decoration: none;
+}
+
+.project-card > footer a::after {
+    position: absolute;
+    inset: 0;
+    border-radius: 13px;
+    content: "";
+}
+
+.project-card > footer a:focus-visible {
+    outline: none;
+}
+
+.project-card > footer a:focus-visible::after {
+    outline: 3px solid rgba(47, 111, 237, .32);
+    outline-offset: 2px;
 }
 
 .project-dialog {
@@ -527,7 +547,8 @@
 }
 
 .project-form-field input,
-.project-form-field textarea {
+.project-form-field textarea,
+.project-form-field select {
     display: block;
     width: 100%;
     border: 1px solid #dfe5ee;
@@ -544,6 +565,12 @@
     padding: 0 12px;
 }
 
+.project-form-field select {
+    height: 42px;
+    padding: 0 34px 0 12px;
+    cursor: pointer;
+}
+
 .project-form-field textarea {
     min-height: 96px;
     padding: 11px 12px;
@@ -551,7 +578,8 @@
 }
 
 .project-form-field input:focus,
-.project-form-field textarea:focus {
+.project-form-field textarea:focus,
+.project-form-field select:focus {
     border-color: #8fb4ff;
     box-shadow: 0 0 0 3px rgba(47, 111, 237, .09);
 }

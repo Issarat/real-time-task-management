@@ -9,4 +9,5 @@ public abstract record DashboardLayoutViewModel(
     string ActiveNavigation,
     string PrimaryActionLabel,
     bool ShowSearch,
-    bool ShowNotifications);
+    bool ShowNotifications,
+    string? PrimaryActionDialogId);
