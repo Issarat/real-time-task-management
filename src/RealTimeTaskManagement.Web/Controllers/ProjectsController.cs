@@ -201,6 +201,57 @@ public sealed class ProjectsController(
         return RedirectToAction(nameof(TaskDetails), new { slug, taskId });
     }
 
+    [HttpPost("/projects/{slug}/name")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProjectName(
+        string slug,
+        [Bind(Prefix = nameof(KanbanBoardViewModel.EditProject))]
+        EditProjectViewModel model,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (ModelState.IsValid)
+        {
+            var isUpdated = await projectService.UpdateProjectNameAsync(
+                new UpdateProjectNameRequest(
+                    slug,
+                    model.Name,
+                    user.Id),
+                cancellationToken);
+
+            if (!isUpdated)
+            {
+                return NotFound();
+            }
+
+            TempData["BoardMessage"] = $"แก้ไขชื่อโปรเจกต์เป็น “{model.Name.Trim()}” เรียบร้อยแล้ว";
+            return RedirectToAction(nameof(Board), new { slug });
+        }
+
+        var board = await projectService.GetBoardAsync(
+            slug,
+            user.Id,
+            cancellationToken);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+
+        return View(
+            nameof(Board),
+            CreateBoardViewModel(
+                board,
+                user,
+                editProject: model,
+                openEditProjectModal: true));
+    }
+
     [HttpPost("/projects/{slug}/tasks")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateTask(
@@ -259,7 +310,9 @@ public sealed class ProjectsController(
         ProjectBoard board,
         ApplicationUser currentUser,
         CreateTaskViewModel? createTask = null,
-        bool openCreateTaskModal = false)
+        bool openCreateTaskModal = false,
+        EditProjectViewModel? editProject = null,
+        bool openEditProjectModal = false)
     {
         var currentUserName = string.IsNullOrWhiteSpace(currentUser.DisplayName)
             ? currentUser.Email ?? "สมาชิก"
@@ -292,6 +345,15 @@ public sealed class ProjectsController(
             BoardColumnId = columns.FirstOrDefault()?.Id ?? Guid.Empty
         };
 
+        editProject ??= new EditProjectViewModel
+        {
+            Name = board.Name
+        };
+
+        var canEditProject = board.Members.Any(member =>
+            member.UserId == currentUser.Id
+            && member.Role == ProjectRole.Owner);
+
         return new KanbanBoardViewModel(
             board.Name,
             board.Description ?? "จัดการและติดตามงานของทีมในที่เดียว",
@@ -309,7 +371,10 @@ public sealed class ProjectsController(
                     member.Role.ToString()))
                 .ToArray(),
             createTask,
-            openCreateTaskModal);
+            openCreateTaskModal,
+            editProject,
+            canEditProject,
+            openEditProjectModal);
     }
 
     private static TaskDetailsViewModel CreateTaskDetailsViewModel(

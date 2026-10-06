@@ -13,7 +13,10 @@ public sealed record KanbanBoardViewModel(
     string ProjectSlug = "",
     IReadOnlyList<KanbanMemberViewModel>? Members = null,
     CreateTaskViewModel? CreateTask = null,
-    bool OpenCreateTaskModal = false)
+    bool OpenCreateTaskModal = false,
+    EditProjectViewModel? EditProject = null,
+    bool CanEditProject = false,
+    bool OpenEditProjectModal = false)
     : DashboardLayoutViewModel(
         "Kanban",
         "จัดการทุกงานในที่เดียว",

@@ -259,6 +259,34 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
                 .ToArray());
     }
 
+    public async Task<bool> UpdateProjectNameAsync(
+        UpdateProjectNameRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return false;
+        }
+
+        var project = await dbContext.Projects
+            .SingleOrDefaultAsync(
+                item => item.Slug == request.ProjectSlug
+                    && item.Members.Any(member => member.UserId == request.UserId
+                        && member.Role == ProjectRole.Owner),
+                cancellationToken);
+
+        if (project is null)
+        {
+            return false;
+        }
+
+        project.Name = request.Name.Trim();
+        project.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<CreatedProjectTask?> CreateTaskAsync(
         CreateProjectTaskRequest request,
         CancellationToken cancellationToken = default)

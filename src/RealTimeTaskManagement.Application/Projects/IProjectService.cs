@@ -21,6 +21,10 @@ public interface IProjectService
         string userId,
         CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateProjectNameAsync(
+        UpdateProjectNameRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<CreatedProjectTask?> CreateTaskAsync(
         CreateProjectTaskRequest request,
         CancellationToken cancellationToken = default);
@@ -95,6 +99,11 @@ public sealed record ProjectBoardMember(
     string DisplayName,
     string Email,
     ProjectRole Role);
+
+public sealed record UpdateProjectNameRequest(
+    string ProjectSlug,
+    string Name,
+    string UserId);
 
 public sealed record ProjectBoardColumn(
     Guid Id,

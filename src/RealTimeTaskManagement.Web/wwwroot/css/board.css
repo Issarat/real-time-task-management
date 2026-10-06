@@ -482,6 +482,32 @@
     letter-spacing: -.02em;
 }
 
+.project-edit-button {
+    display: inline-flex;
+    height: 32px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border: 1px solid var(--board-border);
+    border-radius: 8px;
+    color: #64748b;
+    background: #fff;
+    font-size: var(--font-caption);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.project-edit-button:hover {
+    border-color: #abc4ef;
+    color: var(--board-blue);
+    background: #f7faff;
+}
+
+.project-edit-button svg {
+    width: 14px;
+    height: 14px;
+}
+
 .project-status {
     display: inline-flex;
     align-items: center;
