@@ -16,7 +16,12 @@ public sealed record KanbanBoardViewModel(
     bool OpenCreateTaskModal = false,
     EditProjectViewModel? EditProject = null,
     bool CanEditProject = false,
-    bool OpenEditProjectModal = false)
+    bool OpenEditProjectModal = false,
+    CreateInviteViewModel? CreateInvite = null,
+    string? GeneratedInviteCode = null,
+    string? GeneratedInviteExpiresAt = null,
+    int? GeneratedInviteMaxUses = null,
+    bool OpenInviteModal = false)
     : DashboardLayoutViewModel(
         "Kanban",
         "จัดการทุกงานในที่เดียว",

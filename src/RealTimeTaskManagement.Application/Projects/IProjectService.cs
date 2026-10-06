@@ -16,6 +16,10 @@ public interface IProjectService
         JoinProjectRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<CreatedProjectInvite?> CreateInviteAsync(
+        CreateProjectInviteRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<ProjectBoard?> GetBoardAsync(
         string projectSlug,
         string userId,
@@ -76,6 +80,17 @@ public enum JoinProjectStatus
     Revoked,
     UsageLimitReached
 }
+
+public sealed record CreateProjectInviteRequest(
+    string ProjectSlug,
+    int ExpirationDays,
+    int MaxUses,
+    string CreatedByUserId);
+
+public sealed record CreatedProjectInvite(
+    string Code,
+    DateTimeOffset ExpiresAtUtc,
+    int MaxUses);
 
 public sealed record ProjectSummary(
     Guid Id,

@@ -101,6 +101,42 @@
         });
     });
 
+    const inviteCopyButton = document.querySelector('[data-invite-copy]');
+    const generatedInviteInput = document.querySelector('[data-generated-invite-code]');
+    const inviteCopyLabel = document.querySelector('[data-invite-copy-label]');
+    const inviteCopyStatus = document.querySelector('[data-invite-copy-status]');
+
+    inviteCopyButton?.addEventListener('click', async () => {
+        if (!(generatedInviteInput instanceof HTMLInputElement)) {
+            return;
+        }
+
+        let wasCopied = false;
+        try {
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(generatedInviteInput.value);
+                wasCopied = true;
+            }
+        } catch {
+            wasCopied = false;
+        }
+
+        if (!wasCopied) {
+            generatedInviteInput.select();
+            wasCopied = document.execCommand('copy');
+            generatedInviteInput.setSelectionRange(0, 0);
+        }
+
+        if (wasCopied) {
+            if (inviteCopyLabel) {
+                inviteCopyLabel.textContent = 'คัดลอกแล้ว';
+            }
+            if (inviteCopyStatus) {
+                inviteCopyStatus.textContent = 'คัดลอก Invite Code แล้ว';
+            }
+        }
+    });
+
     dialogs.forEach((dialog, dialogId) => {
         if (dialog.dataset.openOnLoad === 'true') {
             openDialog(dialogId, null);

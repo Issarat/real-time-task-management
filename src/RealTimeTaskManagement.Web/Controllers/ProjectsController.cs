@@ -40,7 +40,21 @@ public sealed class ProjectsController(
             return NotFound();
         }
 
-        return View(CreateBoardViewModel(board, user));
+        var generatedInviteCode = TempData["GeneratedInviteCode"] as string;
+        var generatedInviteExpiresAt = TempData["GeneratedInviteExpiresAt"] as string;
+        var generatedInviteMaxUses = int.TryParse(
+            TempData["GeneratedInviteMaxUses"] as string,
+            out var parsedMaxUses)
+            ? parsedMaxUses
+            : (int?)null;
+
+        return View(CreateBoardViewModel(
+            board,
+            user,
+            generatedInviteCode: generatedInviteCode,
+            generatedInviteExpiresAt: generatedInviteExpiresAt,
+            generatedInviteMaxUses: generatedInviteMaxUses,
+            openInviteModal: generatedInviteCode is not null));
     }
 
     [HttpGet("/projects/{slug}/tasks/{taskId:guid}")]
@@ -306,13 +320,75 @@ public sealed class ProjectsController(
                 openCreateTaskModal: true));
     }
 
+    [HttpPost("/projects/{slug}/invites")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateInvite(
+        string slug,
+        [Bind(Prefix = nameof(KanbanBoardViewModel.CreateInvite))]
+        CreateInviteViewModel model,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (ModelState.IsValid)
+        {
+            var invite = await projectService.CreateInviteAsync(
+                new CreateProjectInviteRequest(
+                    slug,
+                    model.ExpirationDays,
+                    model.MaxUses,
+                    user.Id),
+                cancellationToken);
+
+            if (invite is null)
+            {
+                return NotFound();
+            }
+
+            TempData["GeneratedInviteCode"] = invite.Code;
+            TempData["GeneratedInviteExpiresAt"] = invite.ExpiresAtUtc
+                .ToOffset(TimeSpan.FromHours(7))
+                .ToString("dd MMM yyyy, HH:mm");
+            TempData["GeneratedInviteMaxUses"] = invite.MaxUses.ToString();
+
+            return RedirectToAction(nameof(Board), new { slug });
+        }
+
+        var board = await projectService.GetBoardAsync(
+            slug,
+            user.Id,
+            cancellationToken);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+
+        return View(
+            nameof(Board),
+            CreateBoardViewModel(
+                board,
+                user,
+                createInvite: model,
+                openInviteModal: true));
+    }
+
     private static KanbanBoardViewModel CreateBoardViewModel(
         ProjectBoard board,
         ApplicationUser currentUser,
         CreateTaskViewModel? createTask = null,
         bool openCreateTaskModal = false,
         EditProjectViewModel? editProject = null,
-        bool openEditProjectModal = false)
+        bool openEditProjectModal = false,
+        CreateInviteViewModel? createInvite = null,
+        string? generatedInviteCode = null,
+        string? generatedInviteExpiresAt = null,
+        int? generatedInviteMaxUses = null,
+        bool openInviteModal = false)
     {
         var currentUserName = string.IsNullOrWhiteSpace(currentUser.DisplayName)
             ? currentUser.Email ?? "สมาชิก"
@@ -350,6 +426,8 @@ public sealed class ProjectsController(
             Name = board.Name
         };
 
+        createInvite ??= new CreateInviteViewModel();
+
         var canEditProject = board.Members.Any(member =>
             member.UserId == currentUser.Id
             && member.Role == ProjectRole.Owner);
@@ -374,7 +452,12 @@ public sealed class ProjectsController(
             openCreateTaskModal,
             editProject,
             canEditProject,
-            openEditProjectModal);
+            openEditProjectModal,
+            createInvite,
+            generatedInviteCode,
+            generatedInviteExpiresAt,
+            generatedInviteMaxUses,
+            openInviteModal);
     }
 
     private static TaskDetailsViewModel CreateTaskDetailsViewModel(

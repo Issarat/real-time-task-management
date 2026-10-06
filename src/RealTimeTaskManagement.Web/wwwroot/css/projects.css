@@ -457,6 +457,11 @@
     box-shadow: 0 8px 18px rgba(17, 26, 45, .2);
 }
 
+.project-dialog-icon-success {
+    background: #20a86f;
+    box-shadow: 0 8px 18px rgba(32, 168, 111, .2);
+}
+
 .project-dialog-heading h2 {
     margin: 0;
     color: #172033;
@@ -639,6 +644,72 @@
     display: block;
     margin-bottom: 2px;
     color: #31405b;
+    font-size: var(--font-caption);
+}
+
+.generated-invite-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #39465b;
+    font-size: var(--font-body);
+    font-weight: 700;
+}
+
+.generated-invite-row {
+    display: flex;
+    gap: 8px;
+}
+
+.generated-invite-row input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #cbd8ec;
+    border-radius: 9px;
+    outline: none;
+    color: #172033;
+    background: #f7faff;
+    font-family: Consolas, "SFMono-Regular", monospace;
+    font-size: var(--font-body);
+    font-weight: 750;
+    letter-spacing: .06em;
+}
+
+.generated-invite-row input:focus {
+    border-color: #8fb4ff;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, .09);
+}
+
+.generated-invite-row button {
+    display: inline-flex;
+    height: 44px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px;
+    border: 1px solid #2f6fed;
+    border-radius: 9px;
+    color: #fff;
+    background: #2f6fed;
+    font-size: var(--font-body);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.generated-invite-row button:hover {
+    background: #245ed1;
+}
+
+.generated-invite-row button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.invite-copy-status {
+    min-height: 20px;
+    margin: 5px 0 0;
+    color: #258b60;
     font-size: var(--font-caption);
 }
 

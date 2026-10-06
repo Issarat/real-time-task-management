@@ -170,6 +170,71 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
             invite.Project.Name);
     }
 
+    public async Task<CreatedProjectInvite?> CreateInviteAsync(
+        CreateProjectInviteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.ExpirationDays is < 1 or > 30
+            || request.MaxUses is < 1 or > 100)
+        {
+            return null;
+        }
+
+        var projectId = await dbContext.ProjectMembers
+            .AsNoTracking()
+            .Where(member => member.Project.Slug == request.ProjectSlug
+                && member.UserId == request.CreatedByUserId
+                && member.Role == ProjectRole.Owner)
+            .Select(member => (Guid?)member.ProjectId)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (!projectId.HasValue)
+        {
+            return null;
+        }
+
+        string? code = null;
+        string? codeHash = null;
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            var candidate = ProjectInviteCode.Generate();
+            var candidateHash = ProjectInviteCode.Hash(candidate);
+            var alreadyExists = await dbContext.ProjectInvites
+                .AsNoTracking()
+                .AnyAsync(
+                    invite => invite.CodeHash == candidateHash,
+                    cancellationToken);
+
+            if (!alreadyExists)
+            {
+                code = candidate;
+                codeHash = candidateHash;
+                break;
+            }
+        }
+
+        if (code is null || codeHash is null)
+        {
+            throw new InvalidOperationException("Unable to generate a unique project invite code.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var expiresAtUtc = now.AddDays(request.ExpirationDays);
+        dbContext.ProjectInvites.Add(new ProjectInvite
+        {
+            ProjectId = projectId.Value,
+            CodeHash = codeHash,
+            Role = ProjectRole.Member,
+            MaxUses = request.MaxUses,
+            ExpiresAtUtc = expiresAtUtc,
+            CreatedByUserId = request.CreatedByUserId,
+            CreatedAtUtc = now
+        });
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return new CreatedProjectInvite(code, expiresAtUtc, request.MaxUses);
+    }
+
     public async Task<ProjectBoard?> GetBoardAsync(
         string projectSlug,
         string userId,
