@@ -1,0 +1,214 @@
+@model TaskDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "/Views/Shared/_DashboardLayout.cshtml";
+
+    string FormatDate(DateTimeOffset value) =>
+        value.ToLocalTime().ToString("dd MMM yyyy, HH:mm");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/task-details.css" asp-append-version="true" />
+}
+
+<section class="task-details-page">
+    <nav class="task-breadcrumb" aria-label="เส้นทางนำทาง">
+        <a asp-controller="Home" asp-action="Index">โปรเจกต์</a>
+        <span>/</span>
+        <a asp-controller="Projects" asp-action="Board" asp-route-slug="@Model.ProjectSlug">
+            @Model.ProjectName
+        </a>
+        <span>/</span>
+        <span>รายละเอียดงาน</span>
+    </nav>
+
+    <header class="task-details-header">
+        <div class="task-details-badges">
+            <span class="task-status-badge tone-@Model.ColumnTone">
+                <i></i>@Model.ColumnName
+            </span>
+            <span class="task-priority-badge tag-@Model.PriorityTone">
+                @Model.PriorityLabel
+            </span>
+        </div>
+        <a class="back-to-board"
+           asp-controller="Projects"
+           asp-action="Board"
+           asp-route-slug="@Model.ProjectSlug">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M10 7l-5 5 5 5" /></svg>
+            กลับไป Board
+        </a>
+    </header>
+
+    <div class="task-details-grid">
+        <article class="task-description-card">
+            <header>
+                <span class="task-section-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h8M4 6h.01M4 12h.01M4 18h.01" /></svg>
+                </span>
+                <div>
+                    <h2>รายละเอียดงาน</h2>
+                    <p>ข้อมูลและขอบเขตของงานนี้</p>
+                </div>
+                <button class="task-edit-toggle @(Model.OpenEditMode ? "is-hidden" : null)"
+                        type="button"
+                        data-task-edit-open>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10zM14 7l3 3" /></svg>
+                    แก้ไข
+                </button>
+            </header>
+
+            <div class="task-read-view @(Model.OpenEditMode ? "is-hidden" : null)" data-task-read-view>
+                <div class="task-read-field">
+                    <span>ชื่องาน</span>
+                    <h3>@Model.Title</h3>
+                </div>
+                <div class="task-read-field">
+                    <span>รายละเอียด</span>
+                    <p>@Model.Description</p>
+                </div>
+            </div>
+
+            <form class="task-edit-form @(Model.OpenEditMode ? null : "is-hidden")"
+                  asp-controller="Projects"
+                  asp-action="UpdateTaskDetails"
+                  asp-route-slug="@Model.ProjectSlug"
+                  asp-route-taskId="@Model.TaskId"
+                  method="post"
+                  data-task-edit-form>
+                <div asp-validation-summary="ModelOnly" class="task-edit-summary" role="alert"></div>
+
+                <div class="task-edit-grid">
+                    <div class="task-edit-field">
+                        <label asp-for="EditTask.Title">ชื่องาน <span>*</span></label>
+                        <input asp-for="EditTask.Title" autocomplete="off" />
+                        <span asp-validation-for="EditTask.Title" class="task-edit-validation"></span>
+                    </div>
+
+                    <div class="task-edit-field">
+                        <label asp-for="EditTask.Priority">ความสำคัญ</label>
+                        <select asp-for="EditTask.Priority">
+                            <option value="Low">ต่ำ</option>
+                            <option value="Medium">ปานกลาง</option>
+                            <option value="High">สูง</option>
+                        </select>
+                        <span asp-validation-for="EditTask.Priority" class="task-edit-validation"></span>
+                    </div>
+                </div>
+
+                <div class="task-edit-field">
+                    <label asp-for="EditTask.Description">รายละเอียด <em>ไม่บังคับ</em></label>
+                    <textarea asp-for="EditTask.Description"
+                              rows="9"
+                              placeholder="เพิ่มรายละเอียดและขอบเขตของงาน"></textarea>
+                    <span asp-validation-for="EditTask.Description" class="task-edit-validation"></span>
+                </div>
+
+                <footer class="task-edit-actions">
+                    <small>อัปเดตล่าสุด @(Model.UpdatedAtUtc.HasValue ? FormatDate(Model.UpdatedAtUtc.Value) : "—")</small>
+                    <div>
+                        <button class="task-edit-cancel" type="button" data-task-edit-cancel>ยกเลิก</button>
+                        <button class="task-edit-submit" type="submit">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5" /></svg>
+                            บันทึกข้อมูล
+                        </button>
+                    </div>
+                </footer>
+            </form>
+        </article>
+
+        <aside class="task-metadata-card" aria-label="ข้อมูลประกอบของงาน">
+            <h2>ข้อมูล Task</h2>
+
+            <div class="task-meta-row">
+                <span>สถานะ</span>
+                <strong class="task-status-value @(Model.OpenEditMode ? "is-hidden" : null)" data-task-meta-view>
+                    <i class="tone-@Model.ColumnTone"></i>@Model.ColumnName
+                </strong>
+                <form class="task-status-form @(Model.OpenEditMode ? null : "is-hidden")"
+                      asp-controller="Projects"
+                      asp-action="UpdateTaskStatus"
+                      asp-route-slug="@Model.ProjectSlug"
+                      asp-route-taskId="@Model.TaskId"
+                      method="post"
+                      data-task-edit-control>
+                    <select asp-for="BoardColumnId" aria-label="เปลี่ยนสถานะงาน">
+                        @foreach (var status in Model.StatusOptions)
+                        {
+                            <option value="@status.BoardColumnId">@status.Name</option>
+                        }
+                    </select>
+                    <button type="submit">บันทึก</button>
+                </form>
+            </div>
+
+            <div class="task-meta-row">
+                <span>ความสำคัญ</span>
+                <strong class="task-priority-value tag-@Model.PriorityTone">
+                    @Model.PriorityLabel
+                </strong>
+            </div>
+
+            <div class="task-meta-row task-assignee-row">
+                <span>ผู้รับผิดชอบ</span>
+                <div>
+                    <span class="avatar avatar-blue">@Model.AssigneeInitials</span>
+                    <span>
+                        <strong>@Model.AssigneeName</strong>
+                        @if (!string.IsNullOrWhiteSpace(Model.AssigneeEmail))
+                        {
+                            <small>@Model.AssigneeEmail</small>
+                        }
+                    </span>
+                </div>
+            </div>
+
+            <div class="task-meta-row task-due-date-row">
+                <span>กำหนดส่ง</span>
+                <strong class="@(Model.OpenEditMode ? "is-hidden" : null)" data-task-meta-view>
+                    @(Model.DueAtUtc.HasValue
+                        ? Model.DueAtUtc.Value.ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy")
+                        : "ไม่ได้กำหนด")
+                </strong>
+                <form class="task-due-date-form @(Model.OpenEditMode ? null : "is-hidden")"
+                      asp-controller="Projects"
+                      asp-action="UpdateTaskDueDate"
+                      asp-route-slug="@Model.ProjectSlug"
+                      asp-route-taskId="@Model.TaskId"
+                      method="post"
+                      data-task-edit-control>
+                    <input type="date"
+                           name="dueDate"
+                           value="@(Model.DueAtUtc?.ToOffset(TimeSpan.FromHours(7)).ToString("yyyy-MM-dd"))"
+                           aria-label="กำหนดวันส่งงาน" />
+                    <button type="submit">บันทึก</button>
+                </form>
+            </div>
+
+            <div class="task-meta-divider"></div>
+
+            <div class="task-meta-row">
+                <span>สร้างโดย</span>
+                <strong>@Model.CreatedByName</strong>
+            </div>
+
+            <div class="task-meta-row">
+                <span>สร้างเมื่อ</span>
+                <strong>@FormatDate(Model.CreatedAtUtc)</strong>
+            </div>
+
+            <div class="task-meta-row">
+                <span>อัปเดตล่าสุด</span>
+                <strong>
+                    @(Model.UpdatedAtUtc.HasValue ? FormatDate(Model.UpdatedAtUtc.Value) : "ยังไม่มีการแก้ไข")
+                </strong>
+            </div>
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/task-details.js" asp-append-version="true"></script>
+}
