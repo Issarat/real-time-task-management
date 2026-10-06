@@ -471,6 +471,15 @@ body {
   color: var(--auth-primary);
 }
 
+.password-toggle .password-hide-icon,
+.password-toggle[aria-pressed="true"] .password-show-icon {
+  display: none;
+}
+
+.password-toggle[aria-pressed="true"] .password-hide-icon {
+  display: block;
+}
+
 .field-validation {
   min-height: 14px;
   color: var(--auth-danger);

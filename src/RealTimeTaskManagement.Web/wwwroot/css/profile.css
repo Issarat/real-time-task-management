@@ -224,25 +224,31 @@
 .profile-password-input button {
     position: absolute;
     top: 50%;
-    right: 7px;
+    right: 5px;
     display: grid;
-    width: 34px;
+    width: 36px;
     height: 34px;
     padding: 0;
     place-items: center;
-    border: 0;
+    border: 1px solid #cbd5e3;
     border-radius: 8px;
-    color: #8b98ab;
-    background: transparent;
+    color: var(--board-blue);
+    background: #fff;
     cursor: pointer;
     transform: translateY(-50%);
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
 }
 
-.profile-password-input button:hover,
-.profile-password-input button:focus-visible {
+.profile-password-input button:hover {
+    border-color: #8fb4ff;
     color: var(--board-blue);
     background: #eef4ff;
+}
+
+.profile-password-input button:focus-visible {
+    border-color: var(--board-blue);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, .16);
 }
 
 .profile-password-input button svg {
