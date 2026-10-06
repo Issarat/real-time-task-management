@@ -127,6 +127,102 @@ public sealed class AccountController(
     }
 
     [Authorize]
+    [HttpGet("/profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        return View(CreateProfileViewModel(user));
+    }
+
+    [Authorize]
+    [HttpPost("/profile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Profile(
+        [Bind(Prefix = nameof(ProfileViewModel.EditProfile))]
+        EditProfileViewModel model)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (ModelState.IsValid)
+        {
+            user.DisplayName = model.DisplayName.Trim();
+            var result = await userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["ProfileMessage"] = "บันทึกข้อมูลโปรไฟล์เรียบร้อยแล้ว";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            ModelState.AddModelError(
+                string.Empty,
+                "ไม่สามารถบันทึกโปรไฟล์ได้ กรุณาลองใหม่");
+        }
+
+        return View(CreateProfileViewModel(user, model, openEditMode: true));
+    }
+
+    [Authorize]
+    [HttpPost("/profile/password")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(
+        [Bind(Prefix = nameof(ProfileViewModel.PasswordChange))]
+        PasswordChangeViewModel model)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (model.CurrentPassword == model.NewPassword
+            && !string.IsNullOrEmpty(model.NewPassword))
+        {
+            ModelState.AddModelError(
+                nameof(ProfileViewModel.PasswordChange) + "." + nameof(model.NewPassword),
+                "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านปัจจุบัน");
+        }
+
+        if (ModelState.IsValid)
+        {
+            var result = await userManager.ChangePasswordAsync(
+                user,
+                model.CurrentPassword,
+                model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                await signInManager.RefreshSignInAsync(user);
+                TempData["ProfileMessage"] = "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    LocalizeIdentityError(error));
+            }
+        }
+
+        return View(
+            nameof(Profile),
+            CreateProfileViewModel(
+                user,
+                passwordChange: model,
+                openPasswordForm: true));
+    }
+
+    [Authorize]
     [HttpPost("/logout")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout(string? returnUrl = null)
@@ -149,6 +245,47 @@ public sealed class AccountController(
             : Url.Action(nameof(HomeController.Index), "Home")!;
     }
 
+    private static ProfileViewModel CreateProfileViewModel(
+        ApplicationUser user,
+        EditProfileViewModel? editProfile = null,
+        bool openEditMode = false,
+        PasswordChangeViewModel? passwordChange = null,
+        bool openPasswordForm = false)
+    {
+        var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+            ? user.Email ?? "สมาชิก"
+            : user.DisplayName;
+
+        editProfile ??= new EditProfileViewModel
+        {
+            DisplayName = displayName
+        };
+
+        passwordChange ??= new PasswordChangeViewModel();
+
+        return new ProfileViewModel(
+            displayName,
+            user.Email ?? string.Empty,
+            CreateInitials(displayName),
+            user.CreatedAtUtc,
+            editProfile,
+            passwordChange,
+            openEditMode,
+            openPasswordForm);
+    }
+
+    private static string CreateInitials(string displayName)
+    {
+        var initials = string.Concat(
+            displayName
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Take(2)
+                .Select(part => part[0]))
+            .ToUpperInvariant();
+
+        return string.IsNullOrWhiteSpace(initials) ? "U" : initials;
+    }
+
     private static string LocalizeIdentityError(IdentityError error)
     {
         return error.Code switch
@@ -160,7 +297,8 @@ public sealed class AccountController(
             "PasswordRequiresLower" => "รหัสผ่านต้องมีตัวพิมพ์เล็กอย่างน้อย 1 ตัว",
             "PasswordRequiresUpper" => "รหัสผ่านต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว",
             "PasswordRequiresNonAlphanumeric" => "รหัสผ่านต้องมีอักขระพิเศษอย่างน้อย 1 ตัว",
-            _ => "ไม่สามารถสร้างบัญชีได้ กรุณาตรวจสอบข้อมูลแล้วลองใหม่"
+            "PasswordMismatch" => "รหัสผ่านปัจจุบันไม่ถูกต้อง",
+            _ => "ไม่สามารถดำเนินการได้ กรุณาตรวจสอบข้อมูลแล้วลองใหม่"
         };
     }
 }

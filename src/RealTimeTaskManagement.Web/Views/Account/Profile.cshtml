@@ -1,0 +1,212 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "โปรไฟล์";
+    Layout = "/Views/Shared/_DashboardLayout.cshtml";
+    var createdAt = Model.CreatedAtUtc
+        .ToOffset(TimeSpan.FromHours(7))
+        .ToString("dd MMM yyyy, HH:mm");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+}
+
+<section class="profile-page">
+    @if (TempData["ProfileMessage"] is string profileMessage)
+    {
+        <div class="profile-toast" role="status" aria-atomic="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 12.5 3 3 8-8" /></svg>
+            <span>@profileMessage</span>
+        </div>
+    }
+
+    <header class="profile-hero">
+        <span class="profile-avatar" aria-hidden="true">@Model.Initials</span>
+        <div>
+            <p>บัญชีของฉัน</p>
+            <h1>@Model.DisplayName</h1>
+            <span>@Model.Email</span>
+        </div>
+    </header>
+
+    <div class="profile-grid">
+        <article class="profile-card">
+            <header class="profile-card-header">
+                <div>
+                    <h2>ข้อมูลส่วนตัว</h2>
+                    <p>ข้อมูลที่ใช้แสดงภายในโปรเจกต์และงานของคุณ</p>
+                </div>
+                <button class="profile-edit-button @(Model.OpenEditMode ? "is-hidden" : null)"
+                        type="button"
+                        data-profile-edit-open>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10zM14 7l3 3" /></svg>
+                    แก้ไขโปรไฟล์
+                </button>
+            </header>
+
+            <div class="profile-read-view @(Model.OpenEditMode ? "is-hidden" : null)"
+                 data-profile-read-view>
+                <div class="profile-read-field">
+                    <span>ชื่อที่แสดง</span>
+                    <strong>@Model.DisplayName</strong>
+                </div>
+                <div class="profile-read-field">
+                    <span>อีเมล</span>
+                    <strong>@Model.Email</strong>
+                    <small>อีเมลนี้ใช้สำหรับเข้าสู่ระบบ</small>
+                </div>
+            </div>
+
+            <form class="profile-edit-form @(Model.OpenEditMode ? null : "is-hidden")"
+                  asp-controller="Account"
+                  asp-action="Profile"
+                  method="post"
+                  data-profile-edit-form>
+                <div asp-validation-summary="ModelOnly" class="profile-validation-summary" role="alert"></div>
+
+                <div class="profile-form-field">
+                    <label asp-for="EditProfile.DisplayName">ชื่อที่แสดง <span>*</span></label>
+                    <input asp-for="EditProfile.DisplayName"
+                           maxlength="100"
+                           autocomplete="name" />
+                    <span asp-validation-for="EditProfile.DisplayName" class="profile-field-validation"></span>
+                </div>
+
+                <div class="profile-form-field">
+                    <label>อีเมล</label>
+                    <input value="@Model.Email" type="email" readonly />
+                    <small>ยังไม่รองรับการเปลี่ยนอีเมล เนื่องจากเป็นข้อมูลสำหรับเข้าสู่ระบบ</small>
+                </div>
+
+                <footer class="profile-edit-actions">
+                    <button class="profile-cancel-button" type="button" data-profile-edit-cancel>ยกเลิก</button>
+                    <button class="profile-save-button" type="submit">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5" /></svg>
+                        บันทึกข้อมูล
+                    </button>
+                </footer>
+            </form>
+        </article>
+
+        <aside class="profile-card profile-account-card" aria-label="ข้อมูลบัญชี">
+            <h2>ข้อมูลบัญชี</h2>
+            <div class="profile-account-row">
+                <span>สถานะ</span>
+                <strong class="profile-account-status"><i></i>ใช้งานอยู่</strong>
+            </div>
+            <div class="profile-account-row">
+                <span>สร้างบัญชีเมื่อ</span>
+                <strong>@createdAt</strong>
+            </div>
+            <div class="profile-account-row">
+                <span>การเข้าสู่ระบบ</span>
+                <strong>อีเมลและรหัสผ่าน</strong>
+            </div>
+        </aside>
+    </div>
+
+    <article class="profile-card profile-password-card">
+        <header class="profile-card-header">
+            <div>
+                <h2>ความปลอดภัย</h2>
+                <p>เปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบบัญชีนี้</p>
+            </div>
+            <button class="profile-edit-button @(Model.OpenPasswordForm ? "is-hidden" : null)"
+                    type="button"
+                    data-password-edit-open>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2" /></svg>
+                เปลี่ยนรหัสผ่าน
+            </button>
+        </header>
+
+        <div class="profile-security-summary @(Model.OpenPasswordForm ? "is-hidden" : null)"
+             data-password-read-view>
+            <span class="profile-security-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.8 8.1 7 10 4.2-1.9 7-5.3 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <div>
+                <strong>รหัสผ่านได้รับการปกป้อง</strong>
+                <p>ควรใช้รหัสผ่านที่ไม่ซ้ำกับบริการอื่น และเปลี่ยนทันทีเมื่อสงสัยว่ามีผู้อื่นทราบรหัสผ่าน</p>
+            </div>
+        </div>
+
+        <form class="profile-password-form @(Model.OpenPasswordForm ? null : "is-hidden")"
+              asp-controller="Account"
+              asp-action="ChangePassword"
+              method="post"
+              data-password-edit-form>
+            <div asp-validation-summary="ModelOnly" class="profile-validation-summary" role="alert"></div>
+
+            <div class="profile-form-field">
+                <label asp-for="PasswordChange.CurrentPassword">รหัสผ่านปัจจุบัน <span>*</span></label>
+                <div class="profile-password-input">
+                    <input asp-for="PasswordChange.CurrentPassword"
+                           type="password"
+                           autocomplete="current-password" />
+                    <button type="button"
+                            data-password-toggle
+                            data-visible="false"
+                            aria-label="แสดงรหัสผ่านปัจจุบัน"
+                            aria-pressed="false">
+                        <svg class="password-show-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                        <svg class="password-hide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.1 2.8M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6a9.8 9.8 0 0 0 3-.5M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>
+                    </button>
+                </div>
+                <span asp-validation-for="PasswordChange.CurrentPassword" class="profile-field-validation"></span>
+            </div>
+
+            <div class="profile-password-grid">
+                <div class="profile-form-field">
+                    <label asp-for="PasswordChange.NewPassword">รหัสผ่านใหม่ <span>*</span></label>
+                    <div class="profile-password-input">
+                        <input asp-for="PasswordChange.NewPassword"
+                               type="password"
+                               autocomplete="new-password" />
+                        <button type="button"
+                                data-password-toggle
+                                data-visible="false"
+                                aria-label="แสดงรหัสผ่านใหม่"
+                                aria-pressed="false">
+                            <svg class="password-show-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                            <svg class="password-hide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.1 2.8M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6a9.8 9.8 0 0 0 3-.5M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>
+                        </button>
+                    </div>
+                    <small>อย่างน้อย 8 ตัวอักษร มีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข</small>
+                    <span asp-validation-for="PasswordChange.NewPassword" class="profile-field-validation"></span>
+                </div>
+
+                <div class="profile-form-field">
+                    <label asp-for="PasswordChange.ConfirmPassword">ยืนยันรหัสผ่านใหม่ <span>*</span></label>
+                    <div class="profile-password-input">
+                        <input asp-for="PasswordChange.ConfirmPassword"
+                               type="password"
+                               autocomplete="new-password" />
+                        <button type="button"
+                                data-password-toggle
+                                data-visible="false"
+                                aria-label="แสดงการยืนยันรหัสผ่าน"
+                                aria-pressed="false">
+                            <svg class="password-show-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                            <svg class="password-hide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.1 2.8M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6a9.8 9.8 0 0 0 3-.5M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>
+                        </button>
+                    </div>
+                    <span asp-validation-for="PasswordChange.ConfirmPassword" class="profile-field-validation"></span>
+                </div>
+            </div>
+
+            <footer class="profile-edit-actions">
+                <button class="profile-cancel-button" type="button" data-password-edit-cancel>ยกเลิก</button>
+                <button class="profile-save-button" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5" /></svg>
+                    เปลี่ยนรหัสผ่าน
+                </button>
+            </footer>
+        </form>
+    </article>
+</section>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/profile.js" asp-append-version="true"></script>
+}
