@@ -42,4 +42,5 @@ public sealed record TaskDetailsViewModel(
 public sealed record TaskStatusOptionViewModel(
     Guid BoardColumnId,
     string Name,
-    string Tone);
+    string Tone,
+    bool IsSelectable);

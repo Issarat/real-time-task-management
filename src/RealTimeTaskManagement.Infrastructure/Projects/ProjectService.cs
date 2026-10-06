@@ -525,6 +525,15 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
             return true;
         }
 
+        if (!await IsValidStatusStepAsync(
+                task.ProjectId,
+                task.BoardColumnId,
+                destinationColumn.Id,
+                cancellationToken))
+        {
+            return false;
+        }
+
         var lastSortOrder = await dbContext.TaskItems
             .Where(item => item.BoardColumnId == destinationColumn.Id)
             .MaxAsync(item => (decimal?)item.SortOrder, cancellationToken)
@@ -533,6 +542,82 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
         task.BoardColumnId = destinationColumn.Id;
         task.SortOrder = lastSortOrder + 1000m;
         task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> MoveTaskAsync(
+        MoveProjectTaskRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.TaskId == Guid.Empty
+            || request.DestinationBoardColumnId == Guid.Empty
+            || request.OrderedTaskIds.Count == 0
+            || request.OrderedTaskIds.Distinct().Count() != request.OrderedTaskIds.Count
+            || !request.OrderedTaskIds.Contains(request.TaskId))
+        {
+            return false;
+        }
+
+        var task = await dbContext.TaskItems
+            .SingleOrDefaultAsync(
+                item => item.Id == request.TaskId
+                    && item.Project.Slug == request.ProjectSlug
+                    && item.Project.Members.Any(member => member.UserId == request.UserId),
+                cancellationToken);
+
+        if (task is null)
+        {
+            return false;
+        }
+
+        var destinationColumnExists = await dbContext.BoardColumns
+            .AsNoTracking()
+            .AnyAsync(
+                column => column.Id == request.DestinationBoardColumnId
+                    && column.ProjectId == task.ProjectId,
+                cancellationToken);
+
+        if (!destinationColumnExists)
+        {
+            return false;
+        }
+
+        if (!await IsValidStatusStepAsync(
+                task.ProjectId,
+                task.BoardColumnId,
+                request.DestinationBoardColumnId,
+                cancellationToken))
+        {
+            return false;
+        }
+
+        var destinationTasks = await dbContext.TaskItems
+            .Where(item => item.BoardColumnId == request.DestinationBoardColumnId
+                && item.Id != request.TaskId)
+            .ToListAsync(cancellationToken);
+
+        var expectedTaskIds = destinationTasks
+            .Select(item => item.Id)
+            .Append(request.TaskId)
+            .ToHashSet();
+
+        if (!expectedTaskIds.SetEquals(request.OrderedTaskIds))
+        {
+            return false;
+        }
+
+        task.BoardColumnId = request.DestinationBoardColumnId;
+        task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        var taskById = destinationTasks.ToDictionary(item => item.Id);
+        taskById[task.Id] = task;
+
+        for (var index = 0; index < request.OrderedTaskIds.Count; index++)
+        {
+            taskById[request.OrderedTaskIds[index]].SortOrder = (index + 1) * 1000m;
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
@@ -592,6 +677,32 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    private async Task<bool> IsValidStatusStepAsync(
+        Guid projectId,
+        Guid sourceColumnId,
+        Guid destinationColumnId,
+        CancellationToken cancellationToken)
+    {
+        if (sourceColumnId == destinationColumnId)
+        {
+            return true;
+        }
+
+        var orderedColumnIds = await dbContext.BoardColumns
+            .AsNoTracking()
+            .Where(column => column.ProjectId == projectId)
+            .OrderBy(column => column.SortOrder)
+            .Select(column => column.Id)
+            .ToListAsync(cancellationToken);
+
+        var sourceIndex = orderedColumnIds.IndexOf(sourceColumnId);
+        var destinationIndex = orderedColumnIds.IndexOf(destinationColumnId);
+
+        return sourceIndex >= 0
+            && destinationIndex >= 0
+            && Math.Abs(sourceIndex - destinationIndex) <= 1;
     }
 
     private static string CreateSlug(string name, Guid projectId)

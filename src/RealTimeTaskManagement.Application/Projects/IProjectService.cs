@@ -43,6 +43,10 @@ public interface IProjectService
         UpdateProjectTaskStatusRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<bool> MoveTaskAsync(
+        MoveProjectTaskRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<bool> UpdateTaskDueDateAsync(
         UpdateProjectTaskDueDateRequest request,
         CancellationToken cancellationToken = default);
@@ -178,6 +182,13 @@ public sealed record UpdateProjectTaskStatusRequest(
     string ProjectSlug,
     Guid TaskId,
     Guid BoardColumnId,
+    string UserId);
+
+public sealed record MoveProjectTaskRequest(
+    string ProjectSlug,
+    Guid TaskId,
+    Guid DestinationBoardColumnId,
+    IReadOnlyList<Guid> OrderedTaskIds,
     string UserId);
 
 public sealed record UpdateProjectTaskDueDateRequest(

@@ -23,6 +23,14 @@
 }
 
 <section class="board-page" data-board-root data-project-id="@Model.ProjectId">
+    <div hidden data-board-antiforgery>
+        @Html.AntiForgeryToken()
+    </div>
+    <div class="board-move-status"
+         role="status"
+         aria-live="polite"
+         hidden
+         data-board-move-status></div>
     <header class="project-header">
         <div>
             <div class="project-title-row">
@@ -99,11 +107,11 @@
                     <div>
                         <span class="column-dot tone-@column.Tone" aria-hidden="true"></span>
                         <h2>@column.Name</h2>
-                        <span class="column-count tone-@column.Tone">@column.Tasks.Count</span>
+                        <span class="column-count tone-@column.Tone" data-column-count>@column.Tasks.Count</span>
                     </div>
                 </header>
 
-                <div class="task-list">
+                <div class="task-list" data-task-list>
                     @foreach (var task in column.Tasks)
                     {
                         <a asp-controller="Projects"
@@ -111,7 +119,9 @@
                            asp-route-slug="@Model.ProjectSlug"
                            asp-route-taskId="@task.Id"
                            class="task-card"
+                           draggable="true"
                            data-task-card
+                           data-task-id="@task.Id"
                            data-search-text="@($"{task.Title} {task.Description} {task.Tag} {task.AssigneeName}")"
                            aria-label="ดูรายละเอียดงาน @task.Title">
                             <span class="task-tag tag-@task.TagTone">@task.Tag</span>

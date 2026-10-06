@@ -135,12 +135,17 @@
                     <select asp-for="BoardColumnId" aria-label="เปลี่ยนสถานะงาน">
                         @foreach (var status in Model.StatusOptions)
                         {
-                            <option value="@status.BoardColumnId">@status.Name</option>
+                            <option value="@status.BoardColumnId"
+                                    disabled="@(!status.IsSelectable)">@status.Name</option>
                         }
                     </select>
                     <button type="submit">บันทึก</button>
                 </form>
             </div>
+            <p class="task-status-step-note @(Model.OpenEditMode ? null : "is-hidden")"
+               data-task-edit-control>
+                เปลี่ยนสถานะได้ครั้งละ 1 ขั้น
+            </p>
 
             <div class="task-meta-row">
                 <span>ความสำคัญ</span>

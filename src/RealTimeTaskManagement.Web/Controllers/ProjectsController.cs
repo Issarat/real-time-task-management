@@ -215,6 +215,38 @@ public sealed class ProjectsController(
         return RedirectToAction(nameof(TaskDetails), new { slug, taskId });
     }
 
+    [HttpPost("/projects/{slug}/tasks/{taskId:guid}/move")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MoveTask(
+        string slug,
+        Guid taskId,
+        Guid boardColumnId,
+        [FromForm] Guid[] orderedTaskIds,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        var isMoved = await projectService.MoveTaskAsync(
+            new MoveProjectTaskRequest(
+                slug,
+                taskId,
+                boardColumnId,
+                orderedTaskIds,
+                user.Id),
+            cancellationToken);
+
+        if (!isMoved)
+        {
+            return BadRequest(new { message = "ไม่สามารถย้ายงานได้" });
+        }
+
+        return Ok(new { success = true });
+    }
+
     [HttpPost("/projects/{slug}/name")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProjectName(
@@ -477,6 +509,13 @@ public sealed class ProjectsController(
             Priority = task.Priority
         };
 
+        var orderedStatuses = task.StatusOptions
+            .OrderBy(status => status.SortOrder)
+            .ToArray();
+        var currentStatusIndex = Array.FindIndex(
+            orderedStatuses,
+            status => status.BoardColumnId == task.BoardColumnId);
+
         return new TaskDetailsViewModel(
             task.ProjectId,
             task.ProjectSlug,
@@ -489,11 +528,13 @@ public sealed class ProjectsController(
             task.ColumnName,
             GetColumnTone(task.ColumnKey),
             task.BoardColumnId,
-            task.StatusOptions
-                .Select(status => new TaskStatusOptionViewModel(
+            orderedStatuses
+                .Select((status, index) => new TaskStatusOptionViewModel(
                     status.BoardColumnId,
                     status.Name,
-                    GetColumnTone(status.Key)))
+                    GetColumnTone(status.Key),
+                    currentStatusIndex >= 0
+                        && Math.Abs(index - currentStatusIndex) <= 1))
                 .ToArray(),
             task.AssigneeName,
             task.AssigneeEmail,

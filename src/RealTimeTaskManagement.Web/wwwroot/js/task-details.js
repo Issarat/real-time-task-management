@@ -29,7 +29,7 @@
     openButton.addEventListener('click', () => setEditMode(true));
     cancelButton.addEventListener('click', () => {
         editForm.reset();
-        metadataEditControls.forEach((element) => element.reset());
+        metadataEditControls.forEach((element) => element.reset?.());
         setEditMode(false);
     });
 })();

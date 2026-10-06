@@ -487,6 +487,13 @@
     background: var(--board-blue-dark);
 }
 
+.task-status-step-note {
+    margin: -3px 0 8px;
+    color: #929dac;
+    font-size: var(--font-caption);
+    text-align: right;
+}
+
 .task-priority-value {
     min-height: 22px;
     padding: 4px 9px;
