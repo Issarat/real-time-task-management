@@ -94,9 +94,14 @@
                 <div class="task-list">
                     @foreach (var task in column.Tasks)
                     {
-                        <article class="task-card"
-                                 data-task-card
-                                 data-search-text="@($"{task.Title} {task.Description} {task.Tag} {task.AssigneeName}")">
+                        <a asp-controller="Projects"
+                           asp-action="TaskDetails"
+                           asp-route-slug="@Model.ProjectSlug"
+                           asp-route-taskId="@task.Id"
+                           class="task-card"
+                           data-task-card
+                           data-search-text="@($"{task.Title} {task.Description} {task.Tag} {task.AssigneeName}")"
+                           aria-label="ดูรายละเอียดงาน @task.Title">
                             <span class="task-tag tag-@task.TagTone">@task.Tag</span>
                             <h3>@task.Title</h3>
                             @if (!string.IsNullOrWhiteSpace(task.Description))
@@ -130,7 +135,7 @@
                                     @task.AssigneeInitials
                                 </span>
                             </footer>
-                        </article>
+                        </a>
                     }
                     <p class="column-empty @(column.Tasks.Count > 0 ? "is-hidden" : null)" data-column-empty>
                         ยังไม่มีงานในคอลัมน์นี้

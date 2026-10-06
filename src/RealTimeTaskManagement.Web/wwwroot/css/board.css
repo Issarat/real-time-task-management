@@ -8,6 +8,12 @@
     --board-canvas: #f7f9fc;
     --board-column: #eef2f7;
     --board-white: #ffffff;
+    --font-micro: 10px;
+    --font-caption: 12px;
+    --font-body: 14px;
+    --font-subtitle: 16px;
+    --font-title: 20px;
+    --font-display: 24px;
 }
 
 .dashboard-body,
@@ -22,7 +28,7 @@
     color: var(--board-text);
     background: var(--board-canvas);
     font-family: "Segoe UI", "Noto Sans Thai", Arial, sans-serif;
-    font-size: 14px;
+    font-size: var(--font-body);
 }
 
 .dashboard-body button,
@@ -77,7 +83,7 @@
     gap: 10px;
     padding: 0 8px 28px;
     color: #fff;
-    font-size: 17px;
+    font-size: var(--font-subtitle);
     font-weight: 750;
 }
 
@@ -101,7 +107,7 @@
 .sidebar-label {
     margin: 0 10px 10px;
     color: #74839b;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 700;
     letter-spacing: .12em;
 }
@@ -119,7 +125,7 @@
     padding: 0 12px;
     border-radius: 9px;
     color: #aeb9ca;
-    font-size: 12px;
+    font-size: var(--font-body);
     font-weight: 600;
     text-decoration: none;
     transition: color .18s ease, background .18s ease;
@@ -173,7 +179,7 @@
     border-radius: 7px;
     color: #8bb7ff;
     background: rgba(47, 111, 237, .2);
-    font-size: 18px;
+    font-size: var(--font-title);
     line-height: 1;
 }
 
@@ -188,13 +194,13 @@
 
 .sidebar-project-title strong {
     color: #f2f5fa;
-    font-size: 11px;
+    font-size: var(--font-body);
 }
 
 .sidebar-project-title small {
     margin-top: 2px;
     color: #7f8ca1;
-    font-size: 9px;
+    font-size: var(--font-caption);
 }
 
 .sidebar-project-card > button,
@@ -208,7 +214,7 @@
     border-radius: 6px;
     color: #b6c2d5;
     background: rgba(255, 255, 255, .06);
-    font-size: 9px;
+    font-size: var(--font-caption);
     cursor: pointer;
     text-decoration: none;
 }
@@ -245,13 +251,13 @@
 
 .sidebar-user-copy strong {
     color: #fff;
-    font-size: 10px;
+    font-size: var(--font-body);
 }
 
 .sidebar-user-copy small {
     margin-top: 2px;
     color: #77859b;
-    font-size: 8px;
+    font-size: var(--font-caption);
 }
 
 .sidebar-user form {
@@ -321,14 +327,14 @@
 
 .topbar-title strong {
     color: #101828;
-    font-size: 17px;
+    font-size: var(--font-subtitle);
     font-weight: 750;
 }
 
 .topbar-title small {
     margin-top: 2px;
     color: #97a0b1;
-    font-size: 9px;
+    font-size: var(--font-caption);
 }
 
 .topbar-actions {
@@ -390,7 +396,7 @@
     outline: 0;
     color: var(--board-text);
     background: transparent;
-    font-size: 11px;
+    font-size: var(--font-body);
 }
 
 .board-search input::placeholder {
@@ -427,14 +433,14 @@
     flex: 0 0 auto;
     place-items: center;
     border-radius: 50%;
-    font-size: 9px;
+    font-size: var(--font-micro);
     font-weight: 750;
 }
 
 .avatar-small {
     width: 24px;
     height: 24px;
-    font-size: 7px;
+    font-size: var(--font-micro);
 }
 
 .avatar-blue { color: #2870e8; background: #e6f0ff; }
@@ -471,7 +477,7 @@
 .project-title-row h1 {
     margin: 0;
     color: #151e2f;
-    font-size: 20px;
+    font-size: var(--font-title);
     font-weight: 780;
     letter-spacing: -.02em;
 }
@@ -481,7 +487,7 @@
     align-items: center;
     gap: 5px;
     color: #279a65;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 700;
 }
 
@@ -495,7 +501,7 @@
 .project-header p {
     margin: 6px 0 0;
     color: #8a95a8;
-    font-size: 10px;
+    font-size: var(--font-caption);
 }
 
 .project-members,
@@ -513,7 +519,7 @@
     height: 30px;
     margin-left: -7px;
     border: 2px solid var(--board-canvas);
-    font-size: 7px;
+    font-size: var(--font-micro);
 }
 
 .avatar-stack .avatar:first-child {
@@ -530,7 +536,7 @@
     border-radius: 50%;
     color: #6f7b8e;
     background: #fff;
-    font-size: 8px;
+    font-size: var(--font-micro);
     font-weight: 700;
 }
 
@@ -538,7 +544,7 @@
     width: 34px;
     height: 30px;
     border-radius: 9px;
-    font-size: 18px;
+    font-size: var(--font-title);
     line-height: 1;
 }
 
@@ -563,7 +569,7 @@
     border: 0;
     color: #8b96a7;
     background: transparent;
-    font-size: 10px;
+    font-size: var(--font-body);
     cursor: pointer;
 }
 
@@ -600,7 +606,7 @@
     border-radius: 8px;
     color: #637085;
     background: #fff;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 600;
     cursor: pointer;
 }
@@ -682,7 +688,7 @@
 .column-header h2 {
     margin: 0;
     color: #445066;
-    font-size: 10px;
+    font-size: var(--font-body);
     font-weight: 750;
 }
 
@@ -699,7 +705,7 @@
     padding: 0 5px;
     place-items: center;
     border-radius: 9px;
-    font-size: 8px;
+    font-size: var(--font-caption);
     font-weight: 750;
 }
 
@@ -718,17 +724,25 @@
 }
 
 .task-card {
+    display: block;
     padding: 13px;
     border: 1px solid rgba(225, 230, 238, .88);
     border-radius: 10px;
     background: #fff;
     box-shadow: 0 1px 2px rgba(25, 35, 52, .025);
     transition: transform .18s ease, box-shadow .18s ease;
+    color: inherit;
+    text-decoration: none;
 }
 
 .task-card:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 22px rgba(29, 45, 72, .08);
+}
+
+.task-card:focus-visible {
+    outline: 3px solid rgba(47, 111, 237, .28);
+    outline-offset: 2px;
 }
 
 .task-card[hidden] {
@@ -738,7 +752,7 @@
 .column-empty {
     margin: 22px 6px;
     color: #98a3b4;
-    font-size: 9px;
+    font-size: var(--font-caption);
     text-align: center;
 }
 
@@ -753,7 +767,7 @@
     min-height: 19px;
     padding: 0 8px;
     border-radius: 10px;
-    font-size: 7px;
+    font-size: var(--font-caption);
     font-weight: 750;
 }
 
@@ -767,7 +781,7 @@
 .task-card h3 {
     margin: 10px 0 0;
     color: #263144;
-    font-size: 11px;
+    font-size: var(--font-body);
     font-weight: 750;
     line-height: 1.45;
 }
@@ -775,7 +789,7 @@
 .task-card p {
     margin: 4px 0 0;
     color: #8b96a8;
-    font-size: 8px;
+    font-size: var(--font-caption);
     line-height: 1.5;
 }
 
@@ -803,7 +817,7 @@
 
 .task-progress small {
     color: #8b95a6;
-    font-size: 7px;
+    font-size: var(--font-caption);
 }
 
 .priority-badge {
@@ -837,7 +851,7 @@
 .task-meta {
     gap: 9px;
     color: #8f99aa;
-    font-size: 7px;
+    font-size: var(--font-caption);
 }
 
 .task-meta > span {
@@ -952,7 +966,7 @@
     }
 
     .project-title-row h1 {
-        font-size: 18px;
+        font-size: var(--font-title);
     }
 
     .project-members .avatar-stack .avatar:nth-child(4),

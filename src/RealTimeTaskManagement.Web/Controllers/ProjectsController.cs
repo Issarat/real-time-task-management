@@ -15,6 +15,9 @@ public sealed class ProjectsController(
 {
     private static readonly string[] MemberTones =
         ["coral", "blue", "purple", "amber", "green", "pink"];
+    private static readonly TimeZoneInfo ThailandTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById(
+            OperatingSystem.IsWindows() ? "SE Asia Standard Time" : "Asia/Bangkok");
 
     [HttpGet("/projects/{slug}/board")]
     public async Task<IActionResult> Board(
@@ -38,6 +41,164 @@ public sealed class ProjectsController(
         }
 
         return View(CreateBoardViewModel(board, user));
+    }
+
+    [HttpGet("/projects/{slug}/tasks/{taskId:guid}")]
+    public async Task<IActionResult> TaskDetails(
+        string slug,
+        Guid taskId,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        var task = await projectService.GetTaskAsync(
+            slug,
+            taskId,
+            user.Id,
+            cancellationToken);
+
+        if (task is null)
+        {
+            return NotFound();
+        }
+
+        return View(CreateTaskDetailsViewModel(task, user));
+    }
+
+    [HttpPost("/projects/{slug}/tasks/{taskId:guid}/details")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateTaskDetails(
+        string slug,
+        Guid taskId,
+        [Bind(Prefix = nameof(TaskDetailsViewModel.EditTask))]
+        EditTaskViewModel model,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (ModelState.IsValid)
+        {
+            var isUpdated = await projectService.UpdateTaskDetailsAsync(
+                new UpdateProjectTaskDetailsRequest(
+                    slug,
+                    taskId,
+                    model.Title,
+                    model.Description,
+                    model.Priority,
+                    user.Id),
+                cancellationToken);
+
+            if (!isUpdated)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(TaskDetails), new { slug, taskId });
+        }
+
+        var task = await projectService.GetTaskAsync(
+            slug,
+            taskId,
+            user.Id,
+            cancellationToken);
+
+        if (task is null)
+        {
+            return NotFound();
+        }
+
+        return View(
+            nameof(TaskDetails),
+            CreateTaskDetailsViewModel(
+                task,
+                user,
+                model,
+                openEditMode: true));
+    }
+
+    [HttpPost("/projects/{slug}/tasks/{taskId:guid}/status")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateTaskStatus(
+        string slug,
+        Guid taskId,
+        Guid boardColumnId,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        if (boardColumnId == Guid.Empty)
+        {
+            return BadRequest();
+        }
+
+        var isUpdated = await projectService.UpdateTaskStatusAsync(
+            new UpdateProjectTaskStatusRequest(
+                slug,
+                taskId,
+                boardColumnId,
+                user.Id),
+            cancellationToken);
+
+        if (!isUpdated)
+        {
+            return NotFound();
+        }
+
+        return RedirectToAction(nameof(TaskDetails), new { slug, taskId });
+    }
+
+    [HttpPost("/projects/{slug}/tasks/{taskId:guid}/due-date")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateTaskDueDate(
+        string slug,
+        Guid taskId,
+        DateOnly? dueDate,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        DateTimeOffset? dueAtUtc = null;
+        if (dueDate.HasValue)
+        {
+            var localDueDate = DateTime.SpecifyKind(
+                dueDate.Value.ToDateTime(TimeOnly.MinValue),
+                DateTimeKind.Unspecified);
+            var utcDueDate = TimeZoneInfo.ConvertTimeToUtc(
+                localDueDate,
+                ThailandTimeZone);
+            dueAtUtc = new DateTimeOffset(utcDueDate);
+        }
+
+        var isUpdated = await projectService.UpdateTaskDueDateAsync(
+            new UpdateProjectTaskDueDateRequest(
+                slug,
+                taskId,
+                dueAtUtc,
+                user.Id),
+            cancellationToken);
+
+        if (!isUpdated)
+        {
+            return NotFound();
+        }
+
+        return RedirectToAction(nameof(TaskDetails), new { slug, taskId });
     }
 
     [HttpPost("/projects/{slug}/tasks")]
@@ -149,6 +310,55 @@ public sealed class ProjectsController(
                 .ToArray(),
             createTask,
             openCreateTaskModal);
+    }
+
+    private static TaskDetailsViewModel CreateTaskDetailsViewModel(
+        ProjectTaskDetails task,
+        ApplicationUser currentUser,
+        EditTaskViewModel? editTask = null,
+        bool openEditMode = false)
+    {
+        var currentUserName = string.IsNullOrWhiteSpace(currentUser.DisplayName)
+            ? currentUser.Email ?? "สมาชิก"
+            : currentUser.DisplayName;
+
+        editTask ??= new EditTaskViewModel
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority
+        };
+
+        return new TaskDetailsViewModel(
+            task.ProjectId,
+            task.ProjectSlug,
+            task.ProjectName,
+            task.TaskId,
+            task.Title,
+            task.Description ?? "ยังไม่มีรายละเอียดสำหรับงานนี้",
+            GetPriorityLabel(task.Priority),
+            GetPriorityTone(task.Priority),
+            task.ColumnName,
+            GetColumnTone(task.ColumnKey),
+            task.BoardColumnId,
+            task.StatusOptions
+                .Select(status => new TaskStatusOptionViewModel(
+                    status.BoardColumnId,
+                    status.Name,
+                    GetColumnTone(status.Key)))
+                .ToArray(),
+            task.AssigneeName,
+            task.AssigneeEmail,
+            CreateInitials(task.AssigneeName),
+            task.CreatedByName,
+            task.DueAtUtc,
+            task.CreatedAtUtc,
+            task.UpdatedAtUtc,
+            editTask,
+            openEditMode,
+            currentUserName,
+            currentUser.Email ?? string.Empty,
+            CreateInitials(currentUserName));
     }
 
     private static string GetColumnTone(string key)

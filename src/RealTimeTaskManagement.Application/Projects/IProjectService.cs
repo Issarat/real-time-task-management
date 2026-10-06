@@ -24,6 +24,24 @@ public interface IProjectService
     Task<CreatedProjectTask?> CreateTaskAsync(
         CreateProjectTaskRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<ProjectTaskDetails?> GetTaskAsync(
+        string projectSlug,
+        Guid taskId,
+        string userId,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> UpdateTaskStatusAsync(
+        UpdateProjectTaskStatusRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> UpdateTaskDueDateAsync(
+        UpdateProjectTaskDueDateRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> UpdateTaskDetailsAsync(
+        UpdateProjectTaskDetailsRequest request,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record CreateProjectRequest(
@@ -106,3 +124,48 @@ public sealed record CreatedProjectTask(
     Guid Id,
     string Title,
     Guid BoardColumnId);
+
+public sealed record ProjectTaskDetails(
+    Guid ProjectId,
+    string ProjectName,
+    string ProjectSlug,
+    Guid TaskId,
+    string Title,
+    string? Description,
+    TaskPriority Priority,
+    string ColumnName,
+    string ColumnKey,
+    Guid BoardColumnId,
+    string AssigneeName,
+    string AssigneeEmail,
+    string CreatedByName,
+    DateTimeOffset? DueAtUtc,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset? UpdatedAtUtc,
+    IReadOnlyList<ProjectTaskStatusOption> StatusOptions);
+
+public sealed record ProjectTaskStatusOption(
+    Guid BoardColumnId,
+    string Name,
+    string Key,
+    int SortOrder);
+
+public sealed record UpdateProjectTaskStatusRequest(
+    string ProjectSlug,
+    Guid TaskId,
+    Guid BoardColumnId,
+    string UserId);
+
+public sealed record UpdateProjectTaskDueDateRequest(
+    string ProjectSlug,
+    Guid TaskId,
+    DateTimeOffset? DueAtUtc,
+    string UserId);
+
+public sealed record UpdateProjectTaskDetailsRequest(
+    string ProjectSlug,
+    Guid TaskId,
+    string Title,
+    string? Description,
+    TaskPriority Priority,
+    string UserId);

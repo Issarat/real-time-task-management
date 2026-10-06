@@ -1,8 +1,14 @@
 @model DashboardLayoutViewModel
 @{
     var isKanbanNavigation = Model.ActiveNavigation is "Project" or "Kanban";
-    var kanbanNavigationUrl = Model is KanbanBoardViewModel boardModel
-        ? Url.Action("Board", "Projects", new { slug = boardModel.ProjectSlug })
+    var activeProjectSlug = Model switch
+    {
+        KanbanBoardViewModel boardModel => boardModel.ProjectSlug,
+        TaskDetailsViewModel taskModel => taskModel.ProjectSlug,
+        _ => null
+    };
+    var kanbanNavigationUrl = activeProjectSlug is not null
+        ? Url.Action("Board", "Projects", new { slug = activeProjectSlug })
         : Url.Action("Index", "Home");
 }
 <!DOCTYPE html>

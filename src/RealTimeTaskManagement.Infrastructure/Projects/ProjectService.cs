@@ -301,6 +301,206 @@ internal sealed class ProjectService(ApplicationDbContext dbContext)
         return new CreatedProjectTask(task.Id, task.Title, task.BoardColumnId);
     }
 
+    public async Task<ProjectTaskDetails?> GetTaskAsync(
+        string projectSlug,
+        Guid taskId,
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await dbContext.TaskItems
+            .AsNoTracking()
+            .Where(item => item.Id == taskId
+                && item.Project.Slug == projectSlug
+                && item.Project.Members.Any(member => member.UserId == userId))
+            .Select(item => new
+            {
+                item.ProjectId,
+                ProjectName = item.Project.Name,
+                ProjectSlug = item.Project.Slug,
+                TaskId = item.Id,
+                item.Title,
+                item.Description,
+                item.Priority,
+                ColumnName = item.BoardColumn.Name,
+                ColumnKey = item.BoardColumn.Key,
+                item.BoardColumnId,
+                item.AssignedToUserId,
+                item.CreatedByUserId,
+                item.DueAtUtc,
+                item.CreatedAtUtc,
+                item.UpdatedAtUtc
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (task is null)
+        {
+            return null;
+        }
+
+        var relatedUserIds = new[] { task.AssignedToUserId, task.CreatedByUserId }
+            .Where(relatedUserId => !string.IsNullOrWhiteSpace(relatedUserId))
+            .Select(relatedUserId => relatedUserId!)
+            .Distinct()
+            .ToArray();
+
+        var users = await dbContext.Users
+            .AsNoTracking()
+            .Where(user => relatedUserIds.Contains(user.Id))
+            .Select(user => new
+            {
+                user.Id,
+                user.DisplayName,
+                user.Email
+            })
+            .ToDictionaryAsync(user => user.Id, cancellationToken);
+
+        string GetDisplayName(string? relatedUserId)
+        {
+            if (string.IsNullOrWhiteSpace(relatedUserId)
+                || !users.TryGetValue(relatedUserId, out var relatedUser))
+            {
+                return "ยังไม่มอบหมาย";
+            }
+
+            return string.IsNullOrWhiteSpace(relatedUser.DisplayName)
+                ? relatedUser.Email ?? "สมาชิก"
+                : relatedUser.DisplayName;
+        }
+
+        var statusOptions = await dbContext.BoardColumns
+            .AsNoTracking()
+            .Where(column => column.ProjectId == task.ProjectId)
+            .OrderBy(column => column.SortOrder)
+            .Select(column => new ProjectTaskStatusOption(
+                column.Id,
+                column.Name,
+                column.Key,
+                column.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        return new ProjectTaskDetails(
+            task.ProjectId,
+            task.ProjectName,
+            task.ProjectSlug,
+            task.TaskId,
+            task.Title,
+            task.Description,
+            task.Priority,
+            task.ColumnName,
+            task.ColumnKey,
+            task.BoardColumnId,
+            GetDisplayName(task.AssignedToUserId),
+            task.AssignedToUserId is not null
+                ? users.GetValueOrDefault(task.AssignedToUserId)?.Email ?? string.Empty
+                : string.Empty,
+            GetDisplayName(task.CreatedByUserId),
+            task.DueAtUtc,
+            task.CreatedAtUtc,
+            task.UpdatedAtUtc,
+            statusOptions);
+    }
+
+    public async Task<bool> UpdateTaskStatusAsync(
+        UpdateProjectTaskStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await dbContext.TaskItems
+            .SingleOrDefaultAsync(
+                item => item.Id == request.TaskId
+                    && item.Project.Slug == request.ProjectSlug
+                    && item.Project.Members.Any(member => member.UserId == request.UserId),
+                cancellationToken);
+
+        if (task is null)
+        {
+            return false;
+        }
+
+        var destinationColumn = await dbContext.BoardColumns
+            .SingleOrDefaultAsync(
+                column => column.Id == request.BoardColumnId
+                    && column.ProjectId == task.ProjectId,
+                cancellationToken);
+
+        if (destinationColumn is null)
+        {
+            return false;
+        }
+
+        if (task.BoardColumnId == destinationColumn.Id)
+        {
+            return true;
+        }
+
+        var lastSortOrder = await dbContext.TaskItems
+            .Where(item => item.BoardColumnId == destinationColumn.Id)
+            .MaxAsync(item => (decimal?)item.SortOrder, cancellationToken)
+            ?? 0m;
+
+        task.BoardColumnId = destinationColumn.Id;
+        task.SortOrder = lastSortOrder + 1000m;
+        task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> UpdateTaskDueDateAsync(
+        UpdateProjectTaskDueDateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await dbContext.TaskItems
+            .SingleOrDefaultAsync(
+                item => item.Id == request.TaskId
+                    && item.Project.Slug == request.ProjectSlug
+                    && item.Project.Members.Any(member => member.UserId == request.UserId),
+                cancellationToken);
+
+        if (task is null)
+        {
+            return false;
+        }
+
+        task.DueAtUtc = request.DueAtUtc;
+        task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> UpdateTaskDetailsAsync(
+        UpdateProjectTaskDetailsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title)
+            || !Enum.IsDefined(request.Priority))
+        {
+            return false;
+        }
+
+        var task = await dbContext.TaskItems
+            .SingleOrDefaultAsync(
+                item => item.Id == request.TaskId
+                    && item.Project.Slug == request.ProjectSlug
+                    && item.Project.Members.Any(member => member.UserId == request.UserId),
+                cancellationToken);
+
+        if (task is null)
+        {
+            return false;
+        }
+
+        task.Title = request.Title.Trim();
+        task.Description = string.IsNullOrWhiteSpace(request.Description)
+            ? null
+            : request.Description.Trim();
+        task.Priority = request.Priority;
+        task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     private static string CreateSlug(string name, Guid projectId)
     {
         var normalized = name.Normalize(NormalizationForm.FormD);

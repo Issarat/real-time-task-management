@@ -35,7 +35,7 @@
 .empty-project-copy p {
     margin: 0 0 12px;
     color: #94a0b2;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 750;
     letter-spacing: .14em;
 }
@@ -43,7 +43,7 @@
 .empty-project-copy h1 {
     margin: 0;
     color: #1b2537;
-    font-size: 18px;
+    font-size: var(--font-title);
     font-weight: 750;
     letter-spacing: -.01em;
 }
@@ -53,7 +53,7 @@
     max-width: 380px;
     margin-top: 9px;
     color: #8d98aa;
-    font-size: 11px;
+    font-size: var(--font-body);
     line-height: 1.6;
 }
 
@@ -81,7 +81,7 @@
     gap: 8px;
     padding: 0 18px;
     border-radius: 9px;
-    font-size: 11px;
+    font-size: var(--font-body);
     font-weight: 700;
     cursor: pointer;
     transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
@@ -122,7 +122,7 @@
 
 .project-action-separator {
     color: #798598;
-    font-size: 10px;
+    font-size: var(--font-caption);
     font-weight: 650;
     text-transform: uppercase;
 }
@@ -148,7 +148,7 @@
     }
 
     .empty-project-copy h1 {
-        font-size: 17px;
+        font-size: var(--font-title);
     }
 
     .empty-project-copy span {
@@ -181,7 +181,7 @@
     border-radius: 9px;
     color: #18794e;
     background: #ebfbf3;
-    font-size: 11px;
+    font-size: var(--font-body);
     font-weight: 650;
     transition: opacity .2s ease, transform .2s ease;
 }
@@ -240,7 +240,7 @@
 .projects-overview-header p {
     margin: 0 0 6px;
     color: #8793a7;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 750;
     letter-spacing: .12em;
 }
@@ -248,7 +248,7 @@
 .projects-overview-header h1 {
     margin: 0;
     color: #172033;
-    font-size: 22px;
+    font-size: var(--font-display);
     font-weight: 780;
 }
 
@@ -256,7 +256,7 @@
     display: block;
     margin-top: 5px;
     color: #8d98aa;
-    font-size: 10px;
+    font-size: var(--font-caption);
 }
 
 .projects-header-actions {
@@ -312,7 +312,7 @@
     border-radius: 10px;
     color: #2f6fed;
     background: #e8f0ff;
-    font-size: 13px;
+    font-size: var(--font-body);
     font-weight: 800;
 }
 
@@ -321,14 +321,14 @@
     border-radius: 10px;
     color: #7255ca;
     background: #f0eaff;
-    font-size: 8px;
+    font-size: var(--font-caption);
     font-weight: 750;
 }
 
 .project-card h2 {
     margin: 17px 0 0;
     color: #1d2739;
-    font-size: 15px;
+    font-size: var(--font-subtitle);
     font-weight: 750;
 }
 
@@ -337,7 +337,7 @@
     margin: 7px 0 18px;
     overflow: hidden;
     color: #818da0;
-    font-size: 10px;
+    font-size: var(--font-body);
     line-height: 1.6;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -352,7 +352,7 @@
 .project-card > footer span {
     gap: 5px;
     color: #8b96a8;
-    font-size: 9px;
+    font-size: var(--font-caption);
 }
 
 .project-card > footer svg {
@@ -367,7 +367,7 @@
     border: 0;
     color: #2f6fed;
     background: transparent;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
@@ -460,14 +460,14 @@
 .project-dialog-heading h2 {
     margin: 0;
     color: #172033;
-    font-size: 17px;
+    font-size: var(--font-title);
     font-weight: 780;
 }
 
 .project-dialog-heading p {
     margin: 4px 0 0;
     color: #8a96a8;
-    font-size: 10px;
+    font-size: var(--font-caption);
 }
 
 .dialog-close-button {
@@ -507,7 +507,7 @@
     border-radius: 8px;
     color: #bd2943;
     background: #fff3f5;
-    font-size: 10px;
+    font-size: var(--font-caption);
 }
 
 .project-validation-summary:empty,
@@ -531,7 +531,7 @@
     justify-content: space-between;
     margin-bottom: 7px;
     color: #39465b;
-    font-size: 11px;
+    font-size: var(--font-body);
     font-weight: 700;
 }
 
@@ -541,7 +541,7 @@
 
 .project-form-field label em {
     color: #9aa4b3;
-    font-size: 9px;
+    font-size: var(--font-caption);
     font-style: normal;
     font-weight: 500;
 }
@@ -556,7 +556,7 @@
     outline: 0;
     color: #1c2739;
     background: #fff;
-    font-size: 12px;
+    font-size: var(--font-body);
     transition: border-color .18s ease, box-shadow .18s ease;
 }
 
@@ -593,7 +593,7 @@
     display: block;
     margin-top: 6px;
     color: #99a3b2;
-    font-size: 9px;
+    font-size: var(--font-caption);
 }
 
 .project-form-field .character-count {
@@ -603,7 +603,7 @@
 .project-form-field .invite-code-input {
     color: #172033;
     font-family: Consolas, "SFMono-Regular", monospace;
-    font-size: 14px;
+    font-size: var(--font-body);
     font-weight: 750;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -631,7 +631,7 @@
 
 .invite-code-help p {
     margin: 0;
-    font-size: 10px;
+    font-size: var(--font-caption);
     line-height: 1.55;
 }
 
@@ -639,14 +639,14 @@
     display: block;
     margin-bottom: 2px;
     color: #31405b;
-    font-size: 10px;
+    font-size: var(--font-caption);
 }
 
 .project-field-validation {
     display: block;
     margin-top: 5px;
     color: #d93652;
-    font-size: 9px;
+    font-size: var(--font-caption);
 }
 
 .project-field-validation:empty,
@@ -669,7 +669,7 @@
     height: 38px;
     padding: 0 16px;
     border-radius: 8px;
-    font-size: 10px;
+    font-size: var(--font-body);
     font-weight: 700;
     cursor: pointer;
 }
